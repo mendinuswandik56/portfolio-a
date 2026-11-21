@@ -99,6 +99,48 @@ export default function AnalyticsDashboard({
     (sum, item) => sum + item.total,
     0
   );
+ 
+  // Menghitung pengunjung minggu ini
+  const today = new Date();
+
+  const todayId = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0')
+  ].join('-');
+
+  const weekStart = new Date(today);
+  weekStart.setDate(
+    today.getDate() - ((today.getDay() + 6) % 7)
+  );
+
+  const weekStartId = [
+    weekStart.getFullYear(),
+    String(weekStart.getMonth() + 1).padStart(2, '0'),
+    String(weekStart.getDate()).padStart(2, '0')
+  ].join('-');
+
+  const weeklyTotal = dailyStats
+    .filter(item =>
+      item.date >= weekStartId &&
+      item.date <= todayId
+    )
+    .reduce((sum, item) => sum + item.total, 0);
+
+  // Menghitung pengunjung bulan ini
+  const monthStartId = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    '01'
+  ].join('-');
+
+  const monthlyTotal = dailyStats
+    .filter(item =>
+      item.date >= monthStartId &&
+      item.date <= todayId
+    )
+    .reduce((sum, item) => sum + item.total, 0);
+ 
 
   const cards = [
     {
@@ -130,7 +172,17 @@ export default function AnalyticsDashboard({
       label: 'Pengunjung 7 Hari',
       value: dailyTotal,
       icon: TrendingUp
-    }
+    },
+    {
+  label: 'Pengunjung Minggu Ini',
+  value: weeklyTotal,
+  icon: TrendingUp
+},
+{
+  label: 'Pengunjung Bulan Ini',
+  value: monthlyTotal,
+  icon: BarChart3
+},
   ];
 
   if (!isAdmin) return null;
