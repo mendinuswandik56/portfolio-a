@@ -21,7 +21,10 @@ import {
   Globe,
   ArrowUpRight,
   Pencil,
-  Trash2
+  Trash2,
+  LayoutDashboard,
+  Image,
+  BarChart3
 } from 'lucide-react';
 
 import {
@@ -45,13 +48,10 @@ import {
 import { auth, db, ADMIN_EMAIL } from './firebase';
 import './style.css';
 
-// KONFIGURASI CLOUDINARY
 const CLOUDINARY_CLOUD_NAME = 'ew3vk9zg';
 const CLOUDINARY_UPLOAD_PRESET = 'aplannymw_unsigned';
 
 const GITHUB_URL = 'https://github.com/meskowan';
-
-// FOTO PROFIL
 const PROFILE_IMAGE = '/portfolio-a/profile.jpg';
 
 function App() {
@@ -61,8 +61,8 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
 
-  // PROJECT YANG SEDANG DIEDIT
   const [editingProject, setEditingProject] = useState(null);
 
   const [email, setEmail] = useState('');
@@ -82,14 +82,23 @@ function App() {
 
   const isAdmin =
     !!user &&
-    user.email?.toLowerCase() === ADMIN_EMAIL;
+    user.email?.toLowerCase() ===
+      ADMIN_EMAIL?.toLowerCase();
+
+  const imageCount = projects.filter(
+    p => p.imageUrl
+  ).length;
+
+  const linkCount = projects.filter(
+    p => p.url
+  ).length;
 
   // MEMERIKSA STATUS LOGIN
   useEffect(() => {
     return onAuthStateChanged(auth, setUser);
   }, []);
 
-  // MENGAMBIL PROJECT DARI FIRESTORE
+  // MENGAMBIL DATA PROJECT
   useEffect(() => {
     const q = query(
       collection(db, 'projects'),
@@ -107,12 +116,8 @@ function App() {
         );
       },
       err => {
-        console.error('Firestore read error:', err);
-        setError(
-          err.code
-            ? `${err.code}: ${err.message}`
-            : err.message
-        );
+        console.error('Firestore error:', err);
+        setError(err.message);
       }
     );
   }, []);
@@ -130,7 +135,8 @@ function App() {
       );
 
       if (
-        result.user.email?.toLowerCase() !== ADMIN_EMAIL
+        result.user.email?.toLowerCase() !==
+        ADMIN_EMAIL?.toLowerCase()
       ) {
         await signOut(auth);
         throw new Error('Akun ini bukan admin.');
@@ -139,6 +145,14 @@ function App() {
       setShowLogin(false);
       setPassword('');
       setEmail('');
+      setError('');
+      setShowDashboard(true);
+
+      setTimeout(() => {
+        document.getElementById('dashboard')?.scrollIntoView({
+          behavior: 'smooth'
+        });
+      }, 100);
 
     } catch (err) {
       console.error('Login error:', err);
@@ -146,16 +160,20 @@ function App() {
     }
   }
 
-  // LOGOUT ADMIN
+  // LOGOUT
   async function logout() {
     try {
       await signOut(auth);
+      setShowDashboard(false);
+      setShowForm(false);
+      setEditingProject(null);
+      setError('');
     } catch (err) {
       setError(err.message);
     }
   }
 
-  // MEMBUKA FORM TAMBAH PROJECT
+  // FORM TAMBAH PROJECT
   function openAddForm() {
     setEditingProject(null);
 
@@ -172,7 +190,7 @@ function App() {
     setShowForm(true);
   }
 
-  // MEMBUKA FORM EDIT PROJECT
+  // FORM EDIT PROJECT
   function editProject(p) {
     setEditingProject(p);
 
@@ -191,7 +209,7 @@ function App() {
     setShowForm(true);
   }
 
-  // MENUTUP FORM PROJECT
+  // TUTUP FORM
   function closeProjectForm() {
     if (busy) return;
 
@@ -209,7 +227,7 @@ function App() {
     });
   }
 
-  // TAMBAH DAN EDIT PROJECT
+  // SIMPAN PROJECT
   async function saveProject(e) {
     e.preventDefault();
 
@@ -225,15 +243,12 @@ function App() {
     setStatus('Menyiapkan project...');
 
     try {
-      // PERTAHANKAN GAMBAR LAMA SAAT EDIT
       let imageUrl = editingProject?.imageUrl || '';
 
-      // VALIDASI DAN UPLOAD GAMBAR BARU
+      // UPLOAD GAMBAR
       if (file) {
         if (file.size > 5 * 1024 * 1024) {
-          throw new Error(
-            'Ukuran gambar maksimal 5 MB.'
-          );
+          throw new Error('Ukuran gambar maksimal 5 MB.');
         }
 
         const allowedTypes = [
@@ -248,12 +263,9 @@ function App() {
           );
         }
 
-        setStatus(
-          'Mengunggah gambar ke Cloudinary...'
-        );
+        setStatus('Mengunggah gambar...');
 
         const data = new FormData();
-
         data.append('file', file);
         data.append(
           'upload_preset',
@@ -280,44 +292,39 @@ function App() {
         imageUrl = result.secure_url;
       }
 
-      // DATA PROJECT
       const projectData = {
         ...form,
+        title: form.title.trim(),
+        description: form.description.trim(),
         tech: form.tech
           .split(',')
           .map(x => x.trim())
           .filter(Boolean),
+        url: form.url.trim(),
         imageUrl
       };
 
-      setStatus(
-        'Menyimpan data ke Firebase Firestore...'
-      );
+      setStatus('Menyimpan project...');
 
-      // JIKA SEDANG EDIT
       if (editingProject) {
         await updateDoc(
           doc(db, 'projects', editingProject.id),
           projectData
         );
 
-        setStatus(
-          'Perubahan project berhasil disimpan!'
-        );
-
+        setStatus('Project berhasil diperbarui!');
       } else {
-        // JIKA MENAMBAHKAN PROJECT BARU
-        await addDoc(collection(db, 'projects'), {
-          ...projectData,
-          createdAt: serverTimestamp()
-        });
-
-        setStatus(
-          'Project berhasil dipublikasikan!'
+        await addDoc(
+          collection(db, 'projects'),
+          {
+            ...projectData,
+            createdAt: serverTimestamp()
+          }
         );
+
+        setStatus('Project berhasil ditambahkan!');
       }
 
-      // RESET FORM
       setForm({
         title: '',
         description: '',
@@ -332,25 +339,15 @@ function App() {
       setStatus('');
 
     } catch (err) {
-      console.error(
-        'Kesalahan penyimpanan project:',
-        err
-      );
-
-      setError(
-        err.code
-          ? `${err.code}: ${err.message}`
-          : err.message
-      );
-
+      console.error('Save error:', err);
+      setError(err.message);
       setStatus('Penyimpanan gagal.');
-
     } finally {
       setBusy(false);
     }
   }
 
-  // MENGHAPUS PROJECT
+  // HAPUS PROJECT
   async function removeProject(p) {
     if (!isAdmin) {
       setError('Silakan login sebagai admin.');
@@ -358,7 +355,7 @@ function App() {
     }
 
     const confirmed = window.confirm(
-      `Apakah Anda yakin ingin menghapus project "${p.title}"?`
+      `Yakin ingin menghapus project "${p.title}"?`
     );
 
     if (!confirmed) return;
@@ -370,20 +367,25 @@ function App() {
 
       setError('');
       alert('Project berhasil dihapus.');
-
     } catch (err) {
       console.error('Delete error:', err);
-      setError(
-        err.code
-          ? `${err.code}: ${err.message}`
-          : err.message
-      );
+      setError(err.message);
     }
   }
 
-  // MENUTUP MENU MOBILE
   function closeMenu() {
     setShowMenu(false);
+  }
+
+  function openDashboard() {
+    setShowDashboard(true);
+    closeMenu();
+
+    setTimeout(() => {
+      document.getElementById('dashboard')?.scrollIntoView({
+        behavior: 'smooth'
+      });
+    }, 100);
   }
 
   return (
@@ -395,7 +397,10 @@ function App() {
         <a
           className="brand"
           href="#home"
-          onClick={closeMenu}
+          onClick={() => {
+            closeMenu();
+            setShowDashboard(false);
+          }}
         >
           <span className="brand-mark">P</span>
           APLANNYMW<span className="dot">.</span>
@@ -404,7 +409,7 @@ function App() {
         <button
           className="mobile-menu-btn"
           type="button"
-          aria-label="Buka menu navigasi"
+          aria-label="Buka menu"
           onClick={() => setShowMenu(!showMenu)}
         >
           {showMenu ? <X size={22} /> : <Menu size={22} />}
@@ -415,7 +420,6 @@ function App() {
             showMenu ? 'menu-open' : ''
           }`}
         >
-
           <a href="#home" onClick={closeMenu}>
             <Home size={15} />
             Beranda
@@ -433,13 +437,20 @@ function App() {
             Contact
           </a>
 
+          {isAdmin && (
+            <button
+              className="admin-btn"
+              onClick={openDashboard}
+            >
+              <LayoutDashboard size={16} />
+              Dashboard
+            </button>
+          )}
+
           {isAdmin ? (
             <button
               className="admin-btn"
-              onClick={() => {
-                closeMenu();
-                logout();
-              }}
+              onClick={logout}
             >
               <LogOut size={16} />
               Keluar
@@ -457,11 +468,169 @@ function App() {
               Admin
             </button>
           )}
-
         </div>
       </nav>
 
       <main>
+
+        {/* DASHBOARD ADMIN */}
+        {isAdmin && showDashboard && (
+          <section
+            className="dashboard-section wrap"
+            id="dashboard"
+          >
+            <div className="dashboard-heading">
+              <div>
+                <div className="eyebrow">
+                  <LayoutDashboard size={16} />
+                  ADMIN PANEL
+                </div>
+
+                <h2>
+                  Dashboard Admin<span className="dot">.</span>
+                </h2>
+
+                <p>
+                  Selamat datang kembali, {user.email}.
+                </p>
+              </div>
+
+              <button
+                className="secondary"
+                onClick={() => setShowDashboard(false)}
+              >
+                Kembali ke Portfolio
+              </button>
+            </div>
+
+            {/* STATISTIK */}
+            <div className="dashboard-stats">
+
+              <div className="dashboard-card">
+                <div className="dashboard-card-icon">
+                  <FolderGit2 size={24} />
+                </div>
+                <strong>{projects.length}</strong>
+                <span>Total Project</span>
+              </div>
+
+              <div className="dashboard-card">
+                <div className="dashboard-card-icon">
+                  <Image size={24} />
+                </div>
+                <strong>{imageCount}</strong>
+                <span>Project dengan Gambar</span>
+              </div>
+
+              <div className="dashboard-card">
+                <div className="dashboard-card-icon">
+                  <ExternalLink size={24} />
+                </div>
+                <strong>{linkCount}</strong>
+                <span>Project dengan Link</span>
+              </div>
+
+              <div className="dashboard-card">
+                <div className="dashboard-card-icon">
+                  <BarChart3 size={24} />
+                </div>
+                <strong>
+                  {projects.length - linkCount}
+                </strong>
+                <span>Tanpa Link Demo</span>
+              </div>
+
+            </div>
+
+            {/* AKSI CEPAT */}
+            <div className="dashboard-quick-actions">
+              <h3>Aksi Cepat</h3>
+
+              <button
+                className="primary"
+                onClick={openAddForm}
+              >
+                <Plus size={17} />
+                Tambah Project Baru
+              </button>
+
+              <a
+                className="secondary"
+                href="#projects"
+                onClick={() => setShowDashboard(false)}
+              >
+                <FolderGit2 size={17} />
+                Lihat Semua Project
+              </a>
+            </div>
+
+            {/* PROJECT TERBARU */}
+            <div className="dashboard-list">
+              <div className="dashboard-list-heading">
+                <div>
+                  <h3>Project Terbaru</h3>
+                  <p>Lima project terakhir yang tersimpan.</p>
+                </div>
+
+                <span>{projects.length} Project</span>
+              </div>
+
+              {projects.length === 0 ? (
+                <div className="dashboard-empty">
+                  <FolderGit2 size={32} />
+                  <p>Belum ada project yang tersimpan.</p>
+
+                  <button
+                    className="primary"
+                    onClick={openAddForm}
+                  >
+                    <Plus size={16} />
+                    Tambah Project
+                  </button>
+                </div>
+              ) : (
+                projects.slice(0, 5).map(p => (
+                  <div
+                    className="dashboard-project"
+                    key={p.id}
+                  >
+                    <div className="dashboard-project-info">
+                      {p.imageUrl ? (
+                        <img
+                          src={p.imageUrl}
+                          alt={p.title}
+                        />
+                      ) : (
+                        <div className="dashboard-project-placeholder">
+                          <FolderGit2 size={22} />
+                        </div>
+                      )}
+
+                      <div>
+                        <strong>{p.title}</strong>
+                        <span>
+                          {Array.isArray(p.tech)
+                            ? p.tech.join(', ')
+                            : p.tech || 'Belum ada teknologi'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="edit-project-btn"
+                      onClick={() => editProject(p)}
+                    >
+                      <Pencil size={15} />
+                      Edit
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+          </section>
+        )}
 
         {/* BERANDA */}
         <section className="hero wrap" id="home">
@@ -489,7 +658,6 @@ function App() {
             </p>
 
             <div className="hero-links">
-
               <a className="primary" href="#projects">
                 Lihat Project
                 <ExternalLink size={16} />
@@ -504,13 +672,11 @@ function App() {
                 <Github size={17} />
                 GitHub
               </a>
-
             </div>
 
           </div>
 
           <div className="hero-art">
-
             <div className="orb orb1" />
             <div className="orb orb2" />
 
@@ -524,14 +690,12 @@ function App() {
             <div className="float-icon">
               <Code2 size={24} />
             </div>
-
           </div>
 
         </section>
 
-        {/* STATISTIK */}
+        {/* STATISTIK PORTFOLIO */}
         <section className="stats wrap">
-
           <div>
             <strong>
               {projects.length.toString().padStart(2, '0')}
@@ -548,7 +712,6 @@ function App() {
             <strong>01</strong>
             <span>Perjalanan kreatif</span>
           </div>
-
         </section>
 
         {/* TENTANG */}
@@ -597,7 +760,6 @@ function App() {
         >
 
           <div className="section-head">
-
             <div>
               <div className="eyebrow">
                 KARYA SAYA
@@ -622,7 +784,6 @@ function App() {
                 Tambah Project
               </button>
             )}
-
           </div>
 
           {error && !showLogin && !showForm && (
@@ -630,18 +791,15 @@ function App() {
           )}
 
           {projects.length ? (
-
             <div className="project-grid">
 
               {projects.map(p => (
-
                 <article
                   className="project-card"
                   key={p.id}
                 >
 
                   <div className="project-image">
-
                     {p.imageUrl ? (
                       <img
                         src={p.imageUrl}
@@ -653,22 +811,18 @@ function App() {
                         <span>PROJECT PREVIEW</span>
                       </div>
                     )}
-
                   </div>
 
                   <div className="project-body">
 
                     <div className="tags">
-                      {(Array.isArray(p.tech)
-                        ? p.tech
-                        : []
-                      ).map((t, i) => (
-                        <span key={i}>{t}</span>
-                      ))}
+                      {(Array.isArray(p.tech) ? p.tech : [])
+                        .map((t, i) => (
+                          <span key={i}>{t}</span>
+                        ))}
                     </div>
 
                     <h3>{p.title}</h3>
-
                     <p>{p.description}</p>
 
                     {p.url && (
@@ -683,10 +837,8 @@ function App() {
                       </a>
                     )}
 
-                    {/* TOMBOL ADMIN */}
                     {isAdmin && (
                       <div className="project-admin-actions">
-
                         <button
                           type="button"
                           className="edit-project-btn"
@@ -704,22 +856,16 @@ function App() {
                           <Trash2 size={15} />
                           Hapus
                         </button>
-
                       </div>
                     )}
 
                   </div>
-
                 </article>
-
               ))}
 
             </div>
-
           ) : (
-
             <div className="empty">
-
               <div className="empty-icon">
                 <FolderGit2 size={28} />
               </div>
@@ -740,9 +886,7 @@ function App() {
                   Upload project pertama
                 </button>
               )}
-
             </div>
-
           )}
 
         </section>
@@ -835,7 +979,6 @@ function App() {
 
       {/* FOOTER */}
       <footer className="footer wrap">
-
         <span>
           © {new Date().getFullYear()} Aplannymw.
           Dibuat dengan semangat berkarya.
@@ -844,12 +987,10 @@ function App() {
         <a href="#home">
           Kembali ke atas ↑
         </a>
-
       </footer>
 
       {/* MODAL LOGIN */}
       {showLogin && (
-
         <div
           className="overlay"
           onMouseDown={e => {
@@ -859,12 +1000,10 @@ function App() {
             }
           }}
         >
-
           <form
             className="modal"
             onSubmit={login}
           >
-
             <button
               type="button"
               className="close"
@@ -883,7 +1022,7 @@ function App() {
             <h2>Admin Login</h2>
 
             <p>
-              Masuk untuk mengelola project portofolio.
+              Masuk untuk mengelola portfolio.
             </p>
 
             <label>Email admin</label>
@@ -921,16 +1060,12 @@ function App() {
             <small>
               Akun admin dibuat melalui Firebase Authentication.
             </small>
-
           </form>
-
         </div>
-
       )}
 
       {/* MODAL TAMBAH DAN EDIT PROJECT */}
       {showForm && (
-
         <div
           className="overlay"
           onMouseDown={e => {
@@ -942,12 +1077,10 @@ function App() {
             }
           }}
         >
-
           <form
             className="modal"
             onSubmit={saveProject}
           >
-
             <button
               type="button"
               className="close"
@@ -958,24 +1091,19 @@ function App() {
             </button>
 
             <div className="modal-icon">
-              {editingProject
-                ? <Pencil />
-                : <UploadCloud />
-              }
+              {editingProject ? <Pencil /> : <UploadCloud />}
             </div>
 
             <h2>
               {editingProject
                 ? 'Edit project'
-                : 'Publikasikan project'
-              }
+                : 'Publikasikan project'}
             </h2>
 
             <p>
               {editingProject
                 ? 'Ubah informasi project Anda.'
-                : 'Project akan langsung terlihat oleh pengunjung.'
-              }
+                : 'Project akan langsung terlihat oleh pengunjung.'}
             </p>
 
             <label>Nama project</label>
@@ -1044,6 +1172,7 @@ function App() {
                   src={editingProject.imageUrl}
                   alt="Gambar project saat ini"
                 />
+
                 <small>
                   Gambar saat ini. Pilih gambar baru jika ingin menggantinya.
                 </small>
@@ -1058,9 +1187,7 @@ function App() {
               }
             />
 
-            {status && (
-              <p>{status}</p>
-            )}
+            {status && <p>{status}</p>}
 
             {error && (
               <div className="error">{error}</div>
@@ -1075,19 +1202,14 @@ function App() {
                 ? 'Sedang memproses...'
                 : editingProject
                   ? 'Simpan Perubahan'
-                  : 'Publikasikan Project'
-              }
+                  : 'Publikasikan Project'}
 
               {editingProject
                 ? <Pencil size={16} />
-                : <UploadCloud size={16} />
-              }
+                : <UploadCloud size={16} />}
             </button>
-
           </form>
-
         </div>
-
       )}
 
     </div>
