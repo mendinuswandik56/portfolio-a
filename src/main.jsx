@@ -1133,6 +1133,78 @@ function App() {
           </a>
         </section>
 
+        
+        {/* BELAJAR GRATIS */}
+        <section className="learning-section wrap" id="belajar">
+          <div className="section-head">
+            <div>
+              <div className="eyebrow">PUSAT PEMBELAJARAN</div>
+              <h2>
+                Belajar Gratis<span className="dot">.</span>
+              </h2>
+              <p>
+                Pelajari teknologi dan pengembangan website dari dasar.
+                Gratis untuk semua orang.
+              </p>
+            </div>
+          </div>
+
+          <div className="learning-grid">
+            {[
+              {
+                title: 'Belajar HTML',
+                description: 'Pelajari dasar membuat struktur halaman website.',
+                level: 'Pemula',
+                url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Structuring_content'
+              },
+              {
+                title: 'Belajar CSS',
+                description: 'Pelajari cara mengatur warna, layout, dan desain website.',
+                level: 'Pemula',
+                url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Styling_basics'
+              },
+              {
+                title: 'Belajar JavaScript',
+                description: 'Kenali dasar pemrograman untuk membuat website interaktif.',
+                level: 'Pemula',
+                url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Scripting'
+              },
+              {
+                title: 'Belajar React',
+                description: 'Mulai membangun antarmuka aplikasi menggunakan React.',
+                level: 'Menengah',
+                url: 'https://react.dev/learn'
+              },
+              {
+                title: 'Belajar Firebase',
+                description: 'Pelajari autentikasi dan database untuk aplikasi.',
+                level: 'Menengah',
+                url: 'https://firebase.google.com/docs'
+              },
+              {
+                title: 'Belajar GitHub',
+                description: 'Pelajari cara menyimpan dan membagikan project.',
+                level: 'Pemula',
+                url: 'https://docs.github.com/id'
+              }
+            ].map((item, index) => (
+              <article className="learning-card" key={index}>
+                <span className="learning-level">{item.level}</span>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="learning-link"
+                >
+                  Mulai Belajar <ExternalLink size={15} />
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
+
         {/* PROJECT */}
         <section className="projects-section wrap" id="projects">
           <div className="section-head">
