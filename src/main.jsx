@@ -22,6 +22,7 @@ import {
 
 import { auth, db, ADMIN_EMAIL } from './firebase';
 import BackupRestore from './BackupRestore';
+import { ContactForm, ContactInbox } from './ContactInbox';
 import './style.css';
 const CLOUDINARY_CLOUD_NAME = 'ew3vk9zg';
 const CLOUDINARY_UPLOAD_PRESET = 'aplannymw_unsigned';
@@ -856,6 +857,7 @@ function App() {
             </div>
           {/* BACKUP DAN RESTORE DATABASE */}
           <BackupRestore isAdmin={isAdmin} />
+            <ContactInbox isAdmin={isAdmin} />
             <div className="dashboard-stats">
               {[
                 [FolderGit2, projects.length, 'Total Project'],
@@ -1471,6 +1473,9 @@ function App() {
         </section>
 
         <section className="contact-section wrap" id="contact">
+          <h3>Kirim Pesan Langsung</h3>
+           <p>Silakan kirim pesan melalui formulir berikut.</p>
+          <ContactForm />
           <div className="eyebrow">HUBUNGI SAYA</div>
           <h2>
             Punya ide menarik?<br />
