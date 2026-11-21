@@ -1327,4 +1327,107 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   }
 }
 
+/* ==========================================
+   NOTIFIKASI REAL-TIME DASHBOARD APLANNYMW
+========================================== */
+
+.notification-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  margin: 22px 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.notification-icon {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2ff;
+  color: #4f46e5;
+  border-radius: 13px;
+}
+
+.notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-content h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: #111827;
+}
+
+.notification-content p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notification-count {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ef4444;
+  color: #ffffff;
+  border-radius: 30px;
+  font-weight: bold;
+}
+
+.notification-button {
+  border: none;
+  border-radius: 9px;
+  padding: 10px 15px;
+  background: #4f46e5;
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notification-button:hover {
+  background: #4338ca;
+}
+
+#comment-moderation {
+  scroll-margin-top: 25px;
+}
+
+/* TAMPILAN MOBILE */
+@media (max-width: 480px) {
+  .notification-card {
+    gap: 9px;
+    padding: 13px;
+  }
+
+  .notification-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .notification-content h3 {
+    font-size: 13px;
+  }
+
+  .notification-content p {
+    font-size: 11px;
+  }
+
+  .notification-button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+}
+
 
