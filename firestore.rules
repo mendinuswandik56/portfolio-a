@@ -1,12 +1,82 @@
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ADMIN
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email == 'mendinuswandik56@gmail.com';
+    }
+
+    // PROJECT
     match /projects/{projectId} {
-      // Portfolio dapat dibaca publik.
       allow read: if true;
-      // Hanya akun admin yang boleh menambah, mengubah, atau menghapus proyek.
-      allow create, update, delete: if request.auth != null
-        && request.auth.token.email == 'mendinuswandik918@gmail.com';
+      allow create, update, delete: if isAdmin();
+    }
+
+    // PROFIL PORTFOLIO
+    match /settings/{settingId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // KOMENTAR PROJECT
+    match /comments/{commentId} {
+      allow read: if isAdmin()
+        || resource.data.status == 'approved';
+
+      allow create: if
+        request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 1000
+        && request.resource.data.projectId is string
+        && request.resource.data.status == 'pending';
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // BUKU TAMU
+    match /guestbook/{entryId} {
+      allow read: if isAdmin()
+        || resource.data.status == 'approved';
+
+      allow create: if
+        request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 60
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 500
+        && request.resource.data.status == 'pending';
+
+      allow update, delete: if isAdmin();
+    }
+
+    // STATISTIK PENGUNJUNG
+    match /stats/visitors {
+      allow read: if true;
+
+      allow create: if
+        request.resource.data.total == 1
+        && request.resource.data.keys().hasOnly([
+          'total',
+          'updatedAt'
+        ]);
+
+      allow update: if
+        request.resource.data.total == resource.data.total + 1
+        && request.resource.data.diff(resource.data)
+          .affectedKeys().hasOnly([
+            'total',
+            'updatedAt'
+          ]);
     }
   }
 }
