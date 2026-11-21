@@ -1524,3 +1524,125 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     grid-template-columns: 1fr;
   }
 }
+
+.learning-tools {
+  display: grid;
+  gap: 16px;
+  margin: 28px 0 24px;
+}
+
+.learning-search-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+}
+
+.learning-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 44px 14px 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 12px;
+  outline: none;
+  background: rgba(255,255,255,.06);
+  color: #edf0fa;
+  font: inherit;
+}
+
+.learning-search::placeholder {
+  color: #9ba5bd;
+}
+
+.learning-search:focus {
+  border-color: #9b8cff;
+  box-shadow: 0 0 0 3px rgba(155,140,255,.14);
+}
+
+.learning-clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 0;
+  color: #aeb8ce;
+  cursor: pointer;
+}
+
+.learning-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.learning-category-btn {
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: #dce2f2;
+  border-radius: 999px;
+  padding: 9px 15px;
+  font: inherit;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.learning-category-btn:hover,
+.learning-category-btn.active {
+  background: #8b7cf6;
+  color: #fff;
+  border-color: #8b7cf6;
+}
+
+.learning-results {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+  color: #9ba5bd;
+  font-size: .9rem;
+}
+
+.learning-reset-btn {
+  border: 0;
+  background: transparent;
+  color: #b7aaff;
+  cursor: pointer;
+  font: inherit;
+}
+
+.learning-category-label {
+  display: inline-block;
+  margin: 10px 0;
+  color: #b7aaff;
+  font-size: .8rem;
+}
+
+.learning-empty {
+  grid-column: 1 / -1;
+  padding: 28px;
+  text-align: center;
+  border: 1px dashed rgba(255,255,255,.18);
+  border-radius: 16px;
+  color: #aeb8ce;
+}
+
+.learning-empty h3 {
+  color: #edf0fa;
+  margin-bottom: 8px;
+}
+
+.learning-empty button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 10px;
+  background: rgba(255,255,255,.06);
+  color: #edf0fa;
+  cursor: pointer;
+}
+
