@@ -1990,4 +1990,26 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     margin-left: auto;
   }
 }
+.dashboard-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
+.dashboard-heading-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .dashboard-heading-actions {
+    width: 100%;
+  }
+
+  .dashboard-heading-actions button {
+    flex: 1;
+  }
+}
