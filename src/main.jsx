@@ -28,6 +28,10 @@ import './style.css';
 const CLOUDINARY_CLOUD_NAME = 'ew3vk9zg';
 const CLOUDINARY_UPLOAD_PRESET = 'aplannymw_unsigned';
 
+// ========================================
+// DATA PROFIL DEFAULT
+// ========================================
+
 const DEFAULT_PROFILE = {
   name: 'Aplannymw',
   tagline: 'Saya membangun sesuatu yang bermanfaat.',
@@ -86,6 +90,44 @@ const LEARNING_ITEMS = [
     url: 'https://docs.github.com/id'
   }
 ];
+
+// ========================================
+// KATEGORI BELAJAR
+// ========================================
+
+const LEARNING_CATEGORIES = [
+  'Semua',
+  'Dasar',
+  'Frontend',
+  'Backend',
+  'Tools'
+];
+
+function getLearningCategory(title) {
+  const name = title.toLowerCase();
+
+  if (
+    name.includes('html') ||
+    name.includes('css') ||
+    name.includes('javascript')
+  ) {
+    return 'Dasar';
+  }
+
+  if (name.includes('react')) {
+    return 'Frontend';
+  }
+
+  if (name.includes('firebase')) {
+    return 'Backend';
+  }
+
+  if (name.includes('github')) {
+    return 'Tools';
+  }
+
+  return 'Lainnya';
+}
 
 // ========================================
 // KOMPONEN KOMENTAR PENGUNJUNG
@@ -299,6 +341,10 @@ function App() {
   const [status, setStatus] = useState('');
   const [profileStatus, setProfileStatus] = useState('');
 
+  // STATE PENCARIAN DAN KATEGORI BELAJAR
+  const [learningSearch, setLearningSearch] = useState('');
+  const [learningCategory, setLearningCategory] = useState('Semua');
+
   const isAdmin =
     !!user &&
     user.email?.toLowerCase() === ADMIN_EMAIL?.toLowerCase();
@@ -313,6 +359,28 @@ function App() {
   const approvedComments = pendingComments.filter(
     c => c.status === 'approved'
   );
+
+  // FILTER MATERI BELAJAR
+  const filteredLearningItems = LEARNING_ITEMS.filter(item => {
+    const category = getLearningCategory(item.title);
+    const keyword = learningSearch.toLowerCase().trim();
+
+    const matchesSearch = (
+      `${item.title} ${item.description} ${item.level} ${category}`
+    ).toLowerCase().includes(keyword);
+
+    const matchesCategory =
+      learningCategory === 'Semua' ||
+      category === learningCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  // RESET PENCARIAN
+  function resetLearningFilter() {
+    setLearningSearch('');
+    setLearningCategory('Semua');
+  }
 
   // STATUS LOGIN
   useEffect(() => {
@@ -1302,14 +1370,16 @@ function App() {
           )}
         </section>
 
-        {/* BELAJAR GRATIS */}
+        {/* BELAJAR GRATIS - PENCARIAN DAN FILTER */}
         <section className="learning-section wrap" id="belajar">
           <div className="section-head">
             <div>
               <div className="eyebrow">PUSAT PEMBELAJARAN</div>
+
               <h2>
                 Belajar Gratis<span className="dot">.</span>
               </h2>
+
               <p>
                 Pelajari teknologi dan pengembangan website dari dasar.
                 Gratis untuk semua orang.
@@ -1317,23 +1387,119 @@ function App() {
             </div>
           </div>
 
-          <div className="learning-grid">
-            {LEARNING_ITEMS.map((item, index) => (
-              <article className="learning-card" key={index}>
-                <span className="learning-level">{item.level}</span>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
+          {/* KOLOM PENCARIAN */}
+          <div className="learning-tools">
+            <div className="learning-search-wrap">
+              <input
+                type="search"
+                className="learning-search"
+                placeholder="Cari HTML, CSS, JavaScript, React..."
+                value={learningSearch}
+                onChange={e => setLearningSearch(e.target.value)}
+                aria-label="Cari materi belajar"
+              />
 
-                <a
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="learning-link"
+              {learningSearch && (
+                <button
+                  type="button"
+                  className="learning-clear-btn"
+                  aria-label="Hapus pencarian"
+                  onClick={() => setLearningSearch('')}
                 >
-                  Mulai Belajar <ExternalLink size={15} />
-                </a>
-              </article>
-            ))}
+                  <X size={17} />
+                </button>
+              )}
+            </div>
+
+            {/* FILTER KATEGORI */}
+            <div className="learning-categories">
+              {LEARNING_CATEGORIES.map(category => (
+                <button
+                  key={category}
+                  type="button"
+                  className={`learning-category-btn ${
+                    learningCategory === category ? 'active' : ''
+                  }`}
+                  aria-pressed={learningCategory === category}
+                  onClick={() => setLearningCategory(category)}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* JUMLAH HASIL */}
+          <div className="learning-results">
+            <span>
+              Menampilkan <strong>{filteredLearningItems.length}</strong>
+              {' '}dari {LEARNING_ITEMS.length} materi belajar
+            </span>
+
+            {(learningSearch || learningCategory !== 'Semua') && (
+              <button
+                type="button"
+                className="learning-reset-btn"
+                onClick={resetLearningFilter}
+              >
+                Reset filter
+              </button>
+            )}
+          </div>
+
+          {/* DAFTAR MATERI */}
+          <div className="learning-grid">
+            {filteredLearningItems.length > 0 ? (
+              filteredLearningItems.map(item => (
+                <article
+                  className="learning-card"
+                  key={item.title}
+                >
+                  <span className="learning-level">
+                    {item.level}
+                  </span>
+
+                  <h3>{item.title}</h3>
+
+                  <p>{item.description}</p>
+
+                  <div className="learning-card-category">
+                    {getLearningCategory(item.title)}
+                  </div>
+
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="learning-link"
+                  >
+                    Mulai Belajar
+                    <ExternalLink size={15} />
+                  </a>
+                </article>
+              ))
+            ) : (
+              <div className="learning-empty">
+                <div className="learning-empty-icon">
+                  <FolderGit2 size={30} />
+                </div>
+
+                <h3>Materi tidak ditemukan</h3>
+
+                <p>
+                  Tidak ada materi yang cocok dengan pencarian atau kategori
+                  yang Anda pilih.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={resetLearningFilter}
+                >
+                  <X size={15} />
+                  Reset Pencarian
+                </button>
+              </div>
+            )}
           </div>
         </section>
 
