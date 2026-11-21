@@ -49,8 +49,7 @@ const CLOUDINARY_UPLOAD_PRESET = 'aplannymw_unsigned';
 const GITHUB_URL = 'https://github.com/meskowan';
 
 // FOTO PROFIL
-const PROFILE_IMAGE = '/portfolio-aplannymw/profile.jpg';
-
+const PROFILE_IMAGE = '/portfolio-a/profile.jpg';
 function App() {
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
