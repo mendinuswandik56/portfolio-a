@@ -1646,3 +1646,348 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   cursor: pointer;
 }
 
+/* =====================================
+   FITUR TAMBAHAN APLANNYMW
+===================================== */
+
+.nav-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  background: rgba(255,255,255,.06);
+  color: inherit;
+  cursor: pointer;
+}
+
+.nav-notification-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  border-radius: 20px;
+  background: #ef4444;
+  color: white;
+  font-size: 11px;
+}
+
+.skills-section,
+.guestbook-section,
+.qr-section {
+  padding-top: 75px;
+  padding-bottom: 75px;
+}
+
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 15px;
+  margin-top: 28px;
+}
+
+.skill-card {
+  min-height: 125px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  background: rgba(255,255,255,.04);
+  text-align: center;
+}
+
+.skill-card svg {
+  color: #9b8cff;
+}
+
+.skill-card span {
+  color: #9ba5bd;
+  font-size: .82rem;
+}
+
+.project-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.project-card-actions button,
+.project-card-actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-decoration: none;
+}
+
+.project-detail-modal {
+  max-width: 650px;
+}
+
+.detail-project-image {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+
+.guestbook-layout {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  gap: 25px;
+  margin-top: 25px;
+}
+
+.guestbook-form,
+.guestbook-list {
+  padding: 22px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 18px;
+  background: rgba(255,255,255,.035);
+}
+
+.guestbook-form {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.guestbook-form input,
+.guestbook-form textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  background: rgba(255,255,255,.06);
+  color: inherit;
+  font: inherit;
+}
+
+.guestbook-entry {
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+
+.guestbook-entry:last-child {
+  border-bottom: 0;
+}
+
+.guestbook-entry p {
+  margin: 7px 0;
+}
+
+.guestbook-entry small {
+  color: #9ba5bd;
+}
+
+.qr-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 25px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.qr-modal {
+  max-width: 420px;
+  text-align: center;
+}
+
+.qr-modal > img {
+  width: 230px;
+  max-width: 100%;
+  display: block;
+  margin: 20px auto;
+  border-radius: 12px;
+  background: white;
+  padding: 10px;
+}
+
+.qr-url {
+  overflow-wrap: anywhere;
+  color: #9ba5bd;
+  font-size: .85rem;
+}
+
+.learning-category-label {
+  display: inline-block;
+  margin: 8px 0;
+  padding: 5px 10px;
+  border-radius: 30px;
+  background: rgba(139,124,246,.15);
+  color: #c7bdff;
+  font-size: .8rem;
+}
+
+.learning-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: 520px;
+}
+
+.learning-search-wrap > svg {
+  position: absolute;
+  left: 14px;
+  color: #9ba5bd;
+}
+
+.learning-search {
+  width: 100%;
+  padding: 13px 42px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  background: rgba(255,255,255,.06);
+  color: inherit;
+  font: inherit;
+}
+
+.learning-clear-btn {
+  position: absolute;
+  right: 10px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.learning-tools {
+  display: grid;
+  gap: 15px;
+  margin: 25px 0;
+}
+
+.learning-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.learning-category-btn,
+.learning-reset-btn,
+.learning-empty button {
+  padding: 9px 14px;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 30px;
+  background: rgba(255,255,255,.05);
+  color: inherit;
+  cursor: pointer;
+}
+
+.learning-category-btn.active {
+  background: #8b7cf6;
+  border-color: #8b7cf6;
+  color: white;
+}
+
+.learning-results {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+  color: #9ba5bd;
+}
+
+.learning-empty {
+  grid-column: 1 / -1;
+  padding: 30px;
+  border: 1px dashed rgba(255,255,255,.2);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.learning-empty h3 {
+  margin: 12px 0 8px;
+}
+
+.theme-light {
+  color: #20263a;
+  background: #f5f7fc;
+}
+
+.theme-light .nav,
+.theme-light .dashboard-card,
+.theme-light .project-card,
+.theme-light .learning-card,
+.theme-light .guestbook-form,
+.theme-light .guestbook-list,
+.theme-light .skill-card,
+.theme-light .notification-card,
+.theme-light .dashboard-list,
+.theme-light .modal {
+  background: #fff;
+  color: #20263a;
+  border-color: rgba(20,30,60,.12);
+}
+
+.theme-light p,
+.theme-light .lead,
+.theme-light .learning-results,
+.theme-light .skill-card span,
+.theme-light .guestbook-entry small {
+  color: #586176;
+}
+
+.theme-light input,
+.theme-light textarea,
+.theme-light .learning-search,
+.theme-light .guestbook-form input,
+.theme-light .guestbook-form textarea {
+  background: #f5f7fc;
+  color: #20263a;
+  border-color: #d8deeb;
+}
+
+.theme-light .secondary,
+.theme-light .theme-toggle,
+.theme-light .admin-btn {
+  color: #20263a;
+  border-color: #d8deeb;
+}
+
+.theme-light .learning-category-btn,
+.theme-light .learning-reset-btn {
+  color: #20263a;
+  background: #fff;
+  border-color: #d8deeb;
+}
+
+.theme-light .learning-category-btn.active {
+  background: #8b7cf6;
+  color: #fff;
+}
+
+@media (max-width: 700px) {
+  .guestbook-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .qr-section {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .skills-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nav-right-actions {
+    margin-left: auto;
+  }
+}
+
