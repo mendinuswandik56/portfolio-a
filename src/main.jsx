@@ -19,7 +19,7 @@ import {
 import {
   addDoc, collection, deleteDoc, doc,
   onSnapshot, orderBy, query, serverTimestamp,
-  updateDoc, setDoc
+  updateDoc, setDoc, where
 } from 'firebase/firestore';
 
 import { auth, db, ADMIN_EMAIL } from './firebase';
@@ -44,10 +44,189 @@ const DEFAULT_PROFILE = {
   website: 'https://meskowan.github.io/portfolio-aplannymw/'
 };
 
+// ========================================
+// KOMPONEN KOMENTAR PENGUNJUNG
+// ========================================
+
+function ProjectComments({ projectId }) {
+  const [comments, setComments] = useState([]);
+  const [name, setName] = useState('');
+  const [commentText, setCommentText] = useState('');
+  const [sending, setSending] = useState(false);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    const q = query(
+      collection(db, 'comments'),
+      where('projectId', '==', projectId),
+      where('status', '==', 'approved')
+    );
+
+    return onSnapshot(
+      q,
+      snapshot => {
+        const items = snapshot.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        }));
+
+        items.sort((a, b) => {
+          const timeA = a.createdAt?.toMillis?.() || 0;
+          const timeB = b.createdAt?.toMillis?.() || 0;
+          return timeB - timeA;
+        });
+
+        setComments(items);
+      },
+      error => {
+        console.error('Comment read error:', error);
+      }
+    );
+  }, [projectId]);
+
+  async function submitComment(e) {
+    e.preventDefault();
+
+    if (sending) return;
+
+    const cleanName = name.trim();
+    const cleanText = commentText.trim();
+
+    if (!cleanName || !cleanText) {
+      setMessage('Nama dan komentar harus diisi.');
+      return;
+    }
+
+    if (cleanName.length > 60 || cleanText.length > 1000) {
+      setMessage('Nama maksimal 60 karakter dan komentar maksimal 1000 karakter.');
+      return;
+    }
+
+    setSending(true);
+    setMessage('');
+
+    try {
+      await addDoc(collection(db, 'comments'), {
+        projectId,
+        name: cleanName,
+        text: cleanText,
+        status: 'pending',
+        createdAt: serverTimestamp()
+      });
+
+      setName('');
+      setCommentText('');
+      setMessage('Komentar berhasil dikirim dan sedang menunggu persetujuan admin.');
+    } catch (error) {
+      console.error('Comment submit error:', error);
+      setMessage('Komentar gagal dikirim. Silakan coba lagi.');
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="project-comments">
+      <h4>
+        <MessageCircle size={17} />
+        Komentar ({comments.length})
+      </h4>
+
+      {comments.length === 0 ? (
+        <p className="comment-empty">
+          Belum ada komentar yang disetujui.
+        </p>
+      ) : (
+        <div className="comment-list">
+          {comments.map(c => (
+            <div className="comment-item" key={c.id}>
+              <strong>{c.name}</strong>
+              <p>{c.text}</p>
+              <small>
+                {c.createdAt?.toDate
+                  ? c.createdAt.toDate().toLocaleString('id-ID')
+                  : 'Baru saja'}
+              </small>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <form className="comment-form" onSubmit={submitComment}>
+        <label>Nama kamu</label>
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          maxLength={60}
+          required
+          placeholder="Masukkan nama"
+        />
+
+        <label>Tulis komentar</label>
+        <textarea
+          value={commentText}
+          onChange={e => setCommentText(e.target.value)}
+          maxLength={1000}
+          rows="3"
+          required
+          placeholder="Bagaimana pendapat kamu tentang project ini?"
+        />
+
+        {message && (
+          <p className="comment-message" role="status">
+            {message}
+          </p>
+        )}
+
+        <button className="primary" type="submit" disabled={sending}>
+          {sending ? 'Mengirim...' : 'Kirim Komentar'}
+          <MessageCircle size={16} />
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// ========================================
+// FUNGSI BAGIKAN PROJECT
+// ========================================
+
+async function shareProject(project) {
+  const url =
+    `${window.location.origin}${window.location.pathname}#project-${project.id}`;
+
+  const text = `Lihat project ${project.title} di portfolio Aplannymw`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: project.title,
+        text,
+        url
+      });
+      return;
+    } catch (error) {
+      if (error.name === 'AbortError') return;
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(url);
+    alert('Link project berhasil disalin!');
+  } catch {
+    window.prompt('Salin link project berikut:', url);
+  }
+}
+
+// ========================================
+// KOMPONEN UTAMA
+// ========================================
+
 function App() {
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
+  const [pendingComments, setPendingComments] = useState([]);
 
   const [showLogin, setShowLogin] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -83,6 +262,12 @@ function App() {
 
   const imageCount = projects.filter(p => p.imageUrl).length;
   const linkCount = projects.filter(p => p.url).length;
+  const waitingComments = pendingComments.filter(
+    c => c.status === 'pending'
+  );
+  const approvedComments = pendingComments.filter(
+    c => c.status === 'approved'
+  );
 
   // STATUS LOGIN
   useEffect(() => {
@@ -128,6 +313,66 @@ function App() {
       }
     );
   }, []);
+
+  // AMBIL KOMENTAR UNTUK ADMIN
+  useEffect(() => {
+    if (!isAdmin) {
+      setPendingComments([]);
+      return;
+    }
+
+    return onSnapshot(
+      collection(db, 'comments'),
+      snapshot => {
+        const items = snapshot.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        }));
+
+        items.sort((a, b) => {
+          const timeA = a.createdAt?.toMillis?.() || 0;
+          const timeB = b.createdAt?.toMillis?.() || 0;
+          return timeB - timeA;
+        });
+
+        setPendingComments(items);
+      },
+      err => {
+        console.error('Admin comments error:', err);
+        setError(err.message);
+      }
+    );
+  }, [isAdmin]);
+
+  // SETUJUI KOMENTAR
+  async function approveComment(commentId) {
+    if (!isAdmin) return;
+
+    try {
+      await updateDoc(doc(db, 'comments', commentId), {
+        status: 'approved'
+      });
+    } catch (err) {
+      console.error('Approve comment error:', err);
+      setError(err.message);
+    }
+  }
+
+  // HAPUS KOMENTAR
+  async function removeComment(commentId) {
+    if (!isAdmin) return;
+
+    if (!window.confirm('Yakin ingin menghapus komentar ini?')) {
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, 'comments', commentId));
+    } catch (err) {
+      console.error('Delete comment error:', err);
+      setError(err.message);
+    }
+  }
 
   // LOGIN ADMIN
   async function login(e) {
@@ -292,7 +537,10 @@ function App() {
       setStatus('Menyimpan project...');
 
       if (editingProject) {
-        await updateDoc(doc(db, 'projects', editingProject.id), projectData);
+        await updateDoc(
+          doc(db, 'projects', editingProject.id),
+          projectData
+        );
         setStatus('Project berhasil diperbarui!');
       } else {
         await addDoc(collection(db, 'projects'), {
@@ -477,7 +725,9 @@ function App() {
         </button>
 
         <div className={`nav-actions ${showMenu ? 'menu-open' : ''}`}>
-          <a href="#home" onClick={closeMenu}><Home size={15} />Beranda</a>
+          <a href="#home" onClick={closeMenu}>
+            <Home size={15} />Beranda
+          </a>
           <a href="#about" onClick={closeMenu}>Tentang</a>
           <a href="#projects" onClick={closeMenu}>Project</a>
           <a href="#contact" onClick={closeMenu}>Contact</a>
@@ -522,7 +772,10 @@ function App() {
                 <p>Selamat datang kembali, {user.email}.</p>
               </div>
 
-              <button className="secondary" onClick={() => setShowDashboard(false)}>
+              <button
+                className="secondary"
+                onClick={() => setShowDashboard(false)}
+              >
                 Kembali ke Portfolio
               </button>
             </div>
@@ -530,28 +783,130 @@ function App() {
             {/* STATISTIK */}
             <div className="dashboard-stats">
               <div className="dashboard-card">
-                <div className="dashboard-card-icon"><FolderGit2 size={24} /></div>
+                <div className="dashboard-card-icon">
+                  <FolderGit2 size={24} />
+                </div>
                 <strong>{projects.length}</strong>
                 <span>Total Project</span>
               </div>
 
               <div className="dashboard-card">
-                <div className="dashboard-card-icon"><Image size={24} /></div>
+                <div className="dashboard-card-icon">
+                  <Image size={24} />
+                </div>
                 <strong>{imageCount}</strong>
                 <span>Project dengan Gambar</span>
               </div>
 
               <div className="dashboard-card">
-                <div className="dashboard-card-icon"><ExternalLink size={24} /></div>
+                <div className="dashboard-card-icon">
+                  <ExternalLink size={24} />
+                </div>
                 <strong>{linkCount}</strong>
                 <span>Project dengan Link</span>
               </div>
 
               <div className="dashboard-card">
-                <div className="dashboard-card-icon"><BarChart3 size={24} /></div>
+                <div className="dashboard-card-icon">
+                  <BarChart3 size={24} />
+                </div>
                 <strong>{projects.length - linkCount}</strong>
                 <span>Tanpa Link Demo</span>
               </div>
+            </div>
+
+            {/* MODERASI KOMENTAR */}
+            <div className="dashboard-list">
+              <div className="dashboard-list-heading">
+                <div>
+                  <h3>Moderasi Komentar</h3>
+                  <p>Periksa komentar pengunjung sebelum ditampilkan.</p>
+                </div>
+                <span>{waitingComments.length} Menunggu</span>
+              </div>
+
+              {waitingComments.length === 0 ? (
+                <div className="dashboard-empty">
+                  <MessageCircle size={30} />
+                  <p>Tidak ada komentar yang menunggu persetujuan.</p>
+                </div>
+              ) : (
+                waitingComments.map(c => {
+                  const project = projects.find(
+                    p => p.id === c.projectId
+                  );
+
+                  return (
+                    <div className="comment-admin-item" key={c.id}>
+                      <div>
+                        <strong>{c.name}</strong>
+                        <p>{c.text}</p>
+                        <small>
+                          Project: {project?.title || 'Project tidak ditemukan'}
+                        </small>
+                        <small>
+                          {c.createdAt?.toDate
+                            ? c.createdAt.toDate().toLocaleString('id-ID')
+                            : 'Baru saja'}
+                        </small>
+                      </div>
+
+                      <div className="comment-admin-actions">
+                        <button
+                          className="primary"
+                          type="button"
+                          onClick={() => approveComment(c.id)}
+                        >
+                          Setujui
+                        </button>
+
+                        <button
+                          className="delete-project-btn"
+                          type="button"
+                          onClick={() => removeComment(c.id)}
+                        >
+                          <Trash2 size={15} /> Hapus
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+
+              <div className="dashboard-list-heading">
+                <div>
+                  <h3>Riwayat Komentar</h3>
+                  <p>Komentar yang sudah disetujui.</p>
+                </div>
+                <span>{approvedComments.length} Disetujui</span>
+              </div>
+
+              {approvedComments.length === 0 ? (
+                <p className="comment-empty">
+                  Belum ada komentar yang disetujui.
+                </p>
+              ) : (
+                approvedComments.map(c => (
+                  <div className="comment-admin-item" key={c.id}>
+                    <div>
+                      <strong>{c.name}</strong>
+                      <p>{c.text}</p>
+                      <small>
+                        {projects.find(p => p.id === c.projectId)?.title ||
+                          'Project tidak ditemukan'}
+                      </small>
+                    </div>
+
+                    <button
+                      className="delete-project-btn"
+                      type="button"
+                      onClick={() => removeComment(c.id)}
+                    >
+                      <Trash2 size={15} /> Hapus
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* MANAJEMEN PROFIL */}
@@ -618,7 +973,9 @@ function App() {
                       <div>
                         <strong>{p.title}</strong>
                         <span>
-                          {Array.isArray(p.tech) ? p.tech.join(', ') : p.tech || 'Belum ada teknologi'}
+                          {Array.isArray(p.tech)
+                            ? p.tech.join(', ')
+                            : p.tech || 'Belum ada teknologi'}
                         </span>
                       </div>
                     </div>
@@ -673,10 +1030,15 @@ function App() {
             <div className="orb orb2" />
 
             <div className="profile-photo-frame">
-              <img src={profile.imageUrl} alt={`Foto profil ${profile.name}`} />
+              <img
+                src={profile.imageUrl}
+                alt={`Foto profil ${profile.name}`}
+              />
             </div>
 
-            <div className="float-icon"><Code2 size={24} /></div>
+            <div className="float-icon">
+              <Code2 size={24} />
+            </div>
           </div>
         </section>
 
@@ -741,7 +1103,11 @@ function App() {
           {projects.length ? (
             <div className="project-grid">
               {projects.map(p => (
-                <article className="project-card" key={p.id}>
+                <article
+                  className="project-card"
+                  id={`project-${p.id}`}
+                  key={p.id}
+                >
                   <div className="project-image">
                     {p.imageUrl ? (
                       <img src={p.imageUrl} alt={p.title} />
@@ -764,10 +1130,48 @@ function App() {
                     <p>{p.description}</p>
 
                     {p.url && (
-                      <a className="project-link" href={p.url} target="_blank" rel="noreferrer">
+                      <a
+                        className="project-link"
+                        href={p.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         Lihat project <ExternalLink size={15} />
                       </a>
                     )}
+
+                    {/* BAGIKAN PROJECT */}
+                    <div className="project-share">
+                      <button
+                        type="button"
+                        onClick={() => shareProject(p)}
+                      >
+                        <ExternalLink size={15} /> Bagikan
+                      </button>
+
+                      <a
+                        href={`https://wa.me/?text=${encodeURIComponent(
+                          `Lihat project ${p.title}: ${window.location.origin}${window.location.pathname}#project-${p.id}`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <MessageCircle size={15} /> WhatsApp
+                      </a>
+
+                      <a
+                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                          `${window.location.origin}${window.location.pathname}#project-${p.id}`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <Facebook size={15} /> Facebook
+                      </a>
+                    </div>
+
+                    {/* KOMENTAR PENGUNJUNG */}
+                    <ProjectComments projectId={p.id} />
 
                     {isAdmin && (
                       <div className="project-admin-actions">
@@ -794,7 +1198,9 @@ function App() {
             </div>
           ) : (
             <div className="empty">
-              <div className="empty-icon"><FolderGit2 size={28} /></div>
+              <div className="empty-icon">
+                <FolderGit2 size={28} />
+              </div>
               <h3>Belum ada project</h3>
               <p>Project yang Anda publikasikan akan tampil di sini.</p>
 
@@ -814,7 +1220,9 @@ function App() {
           <h2>
             Punya ide menarik?
             <br />
-            <span className="gradient">Mari kita wujudkan bersama.</span>
+            <span className="gradient">
+              Mari kita wujudkan bersama.
+            </span>
           </h2>
 
           <p>
@@ -866,10 +1274,14 @@ function App() {
           }}
         >
           <form className="modal" onSubmit={login}>
-            <button type="button" className="close" onClick={() => {
-              setShowLogin(false);
-              setError('');
-            }}>
+            <button
+              type="button"
+              className="close"
+              onClick={() => {
+                setShowLogin(false);
+                setError('');
+              }}
+            >
               <X />
             </button>
 
@@ -901,7 +1313,9 @@ function App() {
               Masuk ke Dashboard <LogIn size={16} />
             </button>
 
-            <small>Akun admin dibuat melalui Firebase Authentication.</small>
+            <small>
+              Akun admin dibuat melalui Firebase Authentication.
+            </small>
           </form>
         </div>
       )}
@@ -998,7 +1412,11 @@ function App() {
 
             <div className="current-image">
               <img
-                src={profileFile ? URL.createObjectURL(profileFile) : profile.imageUrl}
+                src={
+                  profileFile
+                    ? URL.createObjectURL(profileFile)
+                    : profile.imageUrl
+                }
                 alt="Preview foto profil"
               />
               <small>
@@ -1119,7 +1537,9 @@ function App() {
               {editingProject ? <Pencil /> : <UploadCloud />}
             </div>
 
-            <h2>{editingProject ? 'Edit project' : 'Publikasikan project'}</h2>
+            <h2>
+              {editingProject ? 'Edit project' : 'Publikasikan project'}
+            </h2>
             <p>
               {editingProject
                 ? 'Ubah informasi project Anda.'
@@ -1130,7 +1550,10 @@ function App() {
             <input
               required
               value={form.title}
-              onChange={e => setForm({ ...form, title: e.target.value })}
+              onChange={e => setForm({
+                ...form,
+                title: e.target.value
+              })}
               placeholder="Contoh: Website Toko Online"
             />
 
@@ -1139,14 +1562,20 @@ function App() {
               required
               rows="3"
               value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
+              onChange={e => setForm({
+                ...form,
+                description: e.target.value
+              })}
               placeholder="Ceritakan project ini..."
             />
 
             <label>Teknologi (pisahkan dengan koma)</label>
             <input
               value={form.tech}
-              onChange={e => setForm({ ...form, tech: e.target.value })}
+              onChange={e => setForm({
+                ...form,
+                tech: e.target.value
+              })}
               placeholder="React, Firebase, CSS"
             />
 
@@ -1154,7 +1583,10 @@ function App() {
             <input
               type="url"
               value={form.url}
-              onChange={e => setForm({ ...form, url: e.target.value })}
+              onChange={e => setForm({
+                ...form,
+                url: e.target.value
+              })}
               placeholder="https://..."
             />
 
@@ -1162,8 +1594,13 @@ function App() {
 
             {editingProject?.imageUrl && !file && (
               <div className="current-image">
-                <img src={editingProject.imageUrl} alt="Gambar project saat ini" />
-                <small>Gambar saat ini. Pilih gambar baru jika ingin menggantinya.</small>
+                <img
+                  src={editingProject.imageUrl}
+                  alt="Gambar project saat ini"
+                />
+                <small>
+                  Gambar saat ini. Pilih gambar baru jika ingin menggantinya.
+                </small>
               </div>
             )}
 
@@ -1183,7 +1620,9 @@ function App() {
                   ? 'Simpan Perubahan'
                   : 'Publikasikan Project'}
 
-              {editingProject ? <Pencil size={16} /> : <UploadCloud size={16} />}
+              {editingProject
+                ? <Pencil size={16} />
+                : <UploadCloud size={16} />}
             </button>
           </form>
         </div>
