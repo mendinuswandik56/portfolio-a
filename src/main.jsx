@@ -339,16 +339,18 @@ function App() {
     }, err => console.warn('Statistik belum tersedia:', err.message));
   }, []);
 
-  // Satu hitungan per browser pada perangkat ini.
-  useEffect(() => {
-    let alreadyCounted = false;
+  
+// Menghitung total pengunjung dan pengunjung harian
+useEffect(() => {
+  // TOTAL PENGUNJUNG: satu kali per browser
+  let alreadyCounted = false;
 
-    try {
-      alreadyCounted = localStorage.getItem('aplannymw-visited') === 'yes';
-    } catch {}
+  try {
+    alreadyCounted =
+      localStorage.getItem('aplannymw-visited') === 'yes';
+  } catch {}
 
-    if (alreadyCounted) return;
-
+  if (!alreadyCounted) {
     setDoc(doc(db, 'stats', 'visitors'), {
       total: increment(1),
       updatedAt: serverTimestamp()
@@ -359,10 +361,50 @@ function App() {
         } catch {}
       })
       .catch(err => {
-        console.warn('Gagal menghitung pengunjung:', err.message);
+        console.warn(
+          'Gagal menghitung pengunjung:',
+          err.message
+        );
       });
-  }, []);
+  }
 
+  // PENGUNJUNG HARIAN: satu kali per browser setiap hari
+  const now = new Date();
+
+  const dateId = [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0')
+  ].join('-');
+
+  const dailyKey = `aplannymw-visited-${dateId}`;
+
+  let alreadyCountedToday = false;
+
+  try {
+    alreadyCountedToday =
+      localStorage.getItem(dailyKey) === 'yes';
+  } catch {}
+
+  if (alreadyCountedToday) return;
+
+  setDoc(doc(db, 'analyticsDaily', dateId), {
+    total: increment(1),
+    updatedAt: serverTimestamp()
+  }, { merge: true })
+    .then(() => {
+      try {
+        localStorage.setItem(dailyKey, 'yes');
+      } catch {}
+    })
+    .catch(err => {
+      console.warn(
+        'Gagal menghitung pengunjung harian:',
+        err.message
+      );
+    });
+
+}, []);
   // Satu listener buku tamu:
   // Admin melihat semua pesan, pengunjung hanya melihat pesan disetujui.
   useEffect(() => {
