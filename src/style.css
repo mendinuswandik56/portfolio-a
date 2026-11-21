@@ -1431,3 +1431,27 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 
+.latest-notification {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.latest-notification strong {
+  color: #111827;
+  font-size: 14px;
+}
+
+.latest-notification p {
+  margin: 6px 0;
+  color: #475569;
+  overflow-wrap: anywhere;
+}
+
+.latest-notification small {
+  color: #64748b;
+  font-size: 11px;
+}
+
