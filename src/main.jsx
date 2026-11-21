@@ -21,8 +21,8 @@ import {
 } from 'firebase/firestore';
 
 import { auth, db, ADMIN_EMAIL } from './firebase';
+import BackupRestore from './BackupRestore';
 import './style.css';
-
 const CLOUDINARY_CLOUD_NAME = 'ew3vk9zg';
 const CLOUDINARY_UPLOAD_PRESET = 'aplannymw_unsigned';
 
@@ -854,7 +854,8 @@ function App() {
                 </button>
               </div>
             </div>
-
+          {/* BACKUP DAN RESTORE DATABASE */}
+          <BackupRestore isAdmin={isAdmin} />
             <div className="dashboard-stats">
               {[
                 [FolderGit2, projects.length, 'Total Project'],
