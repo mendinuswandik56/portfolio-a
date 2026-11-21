@@ -2170,3 +2170,60 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     grid-template-columns: 1fr;
   }
 }
+
+/* CONTACT INBOX */
+.contact-inbox-form {
+  margin: 25px 0;
+  max-width: 650px;
+}
+
+.contact-message-content {
+  width: 100%;
+  min-width: 0;
+}
+
+.contact-message-title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.contact-status {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  background: rgba(120, 120, 120, 0.15);
+}
+
+.contact-status.new {
+  color: #e5a000;
+}
+
+.contact-status.read {
+  color: #22a06b;
+}
+
+.contact-message-content > a {
+  color: var(--accent, #8b7cff);
+  overflow-wrap: anywhere;
+}
+
+.contact-message-content > p {
+  margin: 12px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.contact-message-content small {
+  opacity: 0.7;
+}
+
+.contact-message-content .comment-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 15px;
+}
