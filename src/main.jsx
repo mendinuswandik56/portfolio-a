@@ -19,7 +19,9 @@ import {
   MessageCircle,
   Music2,
   Globe,
-  ArrowUpRight
+  ArrowUpRight,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 
 import {
@@ -36,7 +38,8 @@ import {
   onSnapshot,
   orderBy,
   query,
-  serverTimestamp
+  serverTimestamp,
+  updateDoc
 } from 'firebase/firestore';
 
 import { auth, db, ADMIN_EMAIL } from './firebase';
@@ -50,6 +53,7 @@ const GITHUB_URL = 'https://github.com/meskowan';
 
 // FOTO PROFIL
 const PROFILE_IMAGE = '/portfolio-a/profile.jpg';
+
 function App() {
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState([]);
@@ -57,6 +61,9 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+
+  // PROJECT YANG SEDANG DIEDIT
+  const [editingProject, setEditingProject] = useState(null);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -101,9 +108,10 @@ function App() {
       },
       err => {
         console.error('Firestore read error:', err);
-        setError(err.code
-          ? `${err.code}: ${err.message}`
-          : err.message
+        setError(
+          err.code
+            ? `${err.code}: ${err.message}`
+            : err.message
         );
       }
     );
@@ -147,20 +155,80 @@ function App() {
     }
   }
 
-  // UPLOAD DAN PUBLIKASIKAN PROJECT
+  // MEMBUKA FORM TAMBAH PROJECT
+  function openAddForm() {
+    setEditingProject(null);
+
+    setForm({
+      title: '',
+      description: '',
+      tech: '',
+      url: ''
+    });
+
+    setFile(null);
+    setError('');
+    setStatus('');
+    setShowForm(true);
+  }
+
+  // MEMBUKA FORM EDIT PROJECT
+  function editProject(p) {
+    setEditingProject(p);
+
+    setForm({
+      title: p.title || '',
+      description: p.description || '',
+      tech: Array.isArray(p.tech)
+        ? p.tech.join(', ')
+        : p.tech || '',
+      url: p.url || ''
+    });
+
+    setFile(null);
+    setError('');
+    setStatus('');
+    setShowForm(true);
+  }
+
+  // MENUTUP FORM PROJECT
+  function closeProjectForm() {
+    if (busy) return;
+
+    setShowForm(false);
+    setEditingProject(null);
+    setFile(null);
+    setError('');
+    setStatus('');
+
+    setForm({
+      title: '',
+      description: '',
+      tech: '',
+      url: ''
+    });
+  }
+
+  // TAMBAH DAN EDIT PROJECT
   async function saveProject(e) {
     e.preventDefault();
 
     if (busy) return;
+
+    if (!isAdmin) {
+      setError('Silakan login sebagai admin.');
+      return;
+    }
 
     setBusy(true);
     setError('');
     setStatus('Menyiapkan project...');
 
     try {
-      let imageUrl = '';
+      // PERTAHANKAN GAMBAR LAMA SAAT EDIT
+      let imageUrl = editingProject?.imageUrl || '';
 
-      // VALIDASI DAN UPLOAD GAMBAR
+      // VALIDASI DAN UPLOAD GAMBAR BARU
       if (file) {
         if (file.size > 5 * 1024 * 1024) {
           throw new Error(
@@ -212,25 +280,44 @@ function App() {
         imageUrl = result.secure_url;
       }
 
-      // SIMPAN DATA KE FIRESTORE
-      setStatus(
-        'Mengirim data ke Firebase Firestore...'
-      );
-
-      await addDoc(collection(db, 'projects'), {
+      // DATA PROJECT
+      const projectData = {
         ...form,
         tech: form.tech
           .split(',')
           .map(x => x.trim())
           .filter(Boolean),
-        imageUrl,
-        createdAt: serverTimestamp()
-      });
+        imageUrl
+      };
 
       setStatus(
-        'Project berhasil dipublikasikan!'
+        'Menyimpan data ke Firebase Firestore...'
       );
 
+      // JIKA SEDANG EDIT
+      if (editingProject) {
+        await updateDoc(
+          doc(db, 'projects', editingProject.id),
+          projectData
+        );
+
+        setStatus(
+          'Perubahan project berhasil disimpan!'
+        );
+
+      } else {
+        // JIKA MENAMBAHKAN PROJECT BARU
+        await addDoc(collection(db, 'projects'), {
+          ...projectData,
+          createdAt: serverTimestamp()
+        });
+
+        setStatus(
+          'Project berhasil dipublikasikan!'
+        );
+      }
+
+      // RESET FORM
       setForm({
         title: '',
         description: '',
@@ -239,13 +326,14 @@ function App() {
       });
 
       setFile(null);
+      setEditingProject(null);
       setShowForm(false);
       setError('');
       setStatus('');
 
     } catch (err) {
       console.error(
-        'Kesalahan publikasi project:',
+        'Kesalahan penyimpanan project:',
         err
       );
 
@@ -255,7 +343,7 @@ function App() {
           : err.message
       );
 
-      setStatus('Publikasi gagal.');
+      setStatus('Penyimpanan gagal.');
 
     } finally {
       setBusy(false);
@@ -264,17 +352,32 @@ function App() {
 
   // MENGHAPUS PROJECT
   async function removeProject(p) {
-    if (!confirm(`Hapus project "${p.title}"?`)) {
+    if (!isAdmin) {
+      setError('Silakan login sebagai admin.');
       return;
     }
+
+    const confirmed = window.confirm(
+      `Apakah Anda yakin ingin menghapus project "${p.title}"?`
+    );
+
+    if (!confirmed) return;
 
     try {
       await deleteDoc(
         doc(db, 'projects', p.id)
       );
+
+      setError('');
+      alert('Project berhasil dihapus.');
+
     } catch (err) {
       console.error('Delete error:', err);
-      setError(err.message);
+      setError(
+        err.code
+          ? `${err.code}: ${err.message}`
+          : err.message
+      );
     }
   }
 
@@ -513,11 +616,7 @@ function App() {
             {isAdmin && (
               <button
                 className="primary"
-                onClick={() => {
-                  setError('');
-                  setStatus('');
-                  setShowForm(true);
-                }}
+                onClick={openAddForm}
               >
                 <Plus size={17} />
                 Tambah Project
@@ -555,22 +654,15 @@ function App() {
                       </div>
                     )}
 
-                    {isAdmin && (
-                      <button
-                        className="delete"
-                        title="Hapus project"
-                        onClick={() => removeProject(p)}
-                      >
-                        <X size={16} />
-                      </button>
-                    )}
-
                   </div>
 
                   <div className="project-body">
 
                     <div className="tags">
-                      {(p.tech || []).map((t, i) => (
+                      {(Array.isArray(p.tech)
+                        ? p.tech
+                        : []
+                      ).map((t, i) => (
                         <span key={i}>{t}</span>
                       ))}
                     </div>
@@ -589,6 +681,31 @@ function App() {
                         Lihat project
                         <ExternalLink size={15} />
                       </a>
+                    )}
+
+                    {/* TOMBOL ADMIN */}
+                    {isAdmin && (
+                      <div className="project-admin-actions">
+
+                        <button
+                          type="button"
+                          className="edit-project-btn"
+                          onClick={() => editProject(p)}
+                        >
+                          <Pencil size={15} />
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          className="delete-project-btn"
+                          onClick={() => removeProject(p)}
+                        >
+                          <Trash2 size={15} />
+                          Hapus
+                        </button>
+
+                      </div>
                     )}
 
                   </div>
@@ -617,11 +734,7 @@ function App() {
               {isAdmin && (
                 <button
                   className="primary"
-                  onClick={() => {
-                    setError('');
-                    setStatus('');
-                    setShowForm(true);
-                  }}
+                  onClick={openAddForm}
                 >
                   <Plus size={16} />
                   Upload project pertama
@@ -815,16 +928,17 @@ function App() {
 
       )}
 
-      {/* MODAL TAMBAH PROJECT */}
+      {/* MODAL TAMBAH DAN EDIT PROJECT */}
       {showForm && (
 
         <div
           className="overlay"
           onMouseDown={e => {
-            if (e.target === e.currentTarget && !busy) {
-              setShowForm(false);
-              setError('');
-              setStatus('');
+            if (
+              e.target === e.currentTarget &&
+              !busy
+            ) {
+              closeProjectForm();
             }
           }}
         >
@@ -838,23 +952,30 @@ function App() {
               type="button"
               className="close"
               disabled={busy}
-              onClick={() => {
-                setShowForm(false);
-                setError('');
-                setStatus('');
-              }}
+              onClick={closeProjectForm}
             >
               <X />
             </button>
 
             <div className="modal-icon">
-              <UploadCloud />
+              {editingProject
+                ? <Pencil />
+                : <UploadCloud />
+              }
             </div>
 
-            <h2>Publikasikan project</h2>
+            <h2>
+              {editingProject
+                ? 'Edit project'
+                : 'Publikasikan project'
+              }
+            </h2>
 
             <p>
-              Project akan langsung terlihat oleh pengunjung.
+              {editingProject
+                ? 'Ubah informasi project Anda.'
+                : 'Project akan langsung terlihat oleh pengunjung.'
+              }
             </p>
 
             <label>Nama project</label>
@@ -917,6 +1038,18 @@ function App() {
 
             <label>Gambar cover (opsional)</label>
 
+            {editingProject?.imageUrl && !file && (
+              <div className="current-image">
+                <img
+                  src={editingProject.imageUrl}
+                  alt="Gambar project saat ini"
+                />
+                <small>
+                  Gambar saat ini. Pilih gambar baru jika ingin menggantinya.
+                </small>
+              </div>
+            )}
+
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp"
@@ -940,8 +1073,15 @@ function App() {
             >
               {busy
                 ? 'Sedang memproses...'
-                : 'Publikasikan Project'}
-              <UploadCloud size={16} />
+                : editingProject
+                  ? 'Simpan Perubahan'
+                  : 'Publikasikan Project'
+              }
+
+              {editingProject
+                ? <Pencil size={16} />
+                : <UploadCloud size={16} />
+              }
             </button>
 
           </form>
