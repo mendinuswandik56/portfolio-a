@@ -45,6 +45,49 @@ const DEFAULT_PROFILE = {
 };
 
 // ========================================
+// DATA BELAJAR GRATIS
+// ========================================
+
+const LEARNING_ITEMS = [
+  {
+    title: 'Belajar HTML',
+    description: 'Pelajari dasar membuat struktur halaman website.',
+    level: 'Pemula',
+    url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Structuring_content'
+  },
+  {
+    title: 'Belajar CSS',
+    description: 'Pelajari cara mengatur warna, layout, dan desain website.',
+    level: 'Pemula',
+    url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Styling_basics'
+  },
+  {
+    title: 'Belajar JavaScript',
+    description: 'Kenali dasar pemrograman untuk membuat website interaktif.',
+    level: 'Pemula',
+    url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Scripting'
+  },
+  {
+    title: 'Belajar React',
+    description: 'Mulai membangun antarmuka aplikasi menggunakan React.',
+    level: 'Menengah',
+    url: 'https://react.dev/learn'
+  },
+  {
+    title: 'Belajar Firebase',
+    description: 'Pelajari autentikasi dan database untuk aplikasi.',
+    level: 'Menengah',
+    url: 'https://firebase.google.com/docs'
+  },
+  {
+    title: 'Belajar GitHub',
+    description: 'Pelajari cara menyimpan dan membagikan project.',
+    level: 'Pemula',
+    url: 'https://docs.github.com/id'
+  }
+];
+
+// ========================================
 // KOMPONEN KOMENTAR PENGUNJUNG
 // ========================================
 
@@ -730,8 +773,10 @@ function App() {
           <a href="#home" onClick={closeMenu}>
             <Home size={15} />Beranda
           </a>
+
           <a href="#about" onClick={closeMenu}>Tentang</a>
           <a href="#projects" onClick={closeMenu}>Project</a>
+          <a href="#belajar" onClick={closeMenu}>Belajar Gratis</a>
           <a href="#contact" onClick={closeMenu}>Contact</a>
 
           {isAdmin && (
@@ -817,59 +862,50 @@ function App() {
               </div>
             </div>
 
-            
-{/* NOTIFIKASI KOMENTAR REAL-TIME */}
-<div className="notification-card">
-  <div className="notification-icon">
-    <MessageCircle size={25} />
-  </div>
+            {/* NOTIFIKASI KOMENTAR REAL-TIME */}
+            <div className="notification-card">
+              <div className="notification-icon">
+                <MessageCircle size={25} />
+              </div>
 
-  <div className="notification-content">
-    <h3>Notifikasi Komentar</h3>
+              <div className="notification-content">
+                <h3>Notifikasi Komentar</h3>
 
-    <p>
-      {waitingComments.length > 0
-        ? `Ada ${waitingComments.length} komentar yang menunggu persetujuan.`
-        : 'Tidak ada komentar yang menunggu persetujuan.'}
-    </p>
+                <p>
+                  {waitingComments.length > 0
+                    ? `Ada ${waitingComments.length} komentar yang menunggu persetujuan.`
+                    : 'Tidak ada komentar yang menunggu persetujuan.'}
+                </p>
 
-    {waitingComments.length > 0 && (
-      <div className="latest-notification">
-        <strong>
-          {waitingComments[0].name}
-        </strong>
+                {waitingComments.length > 0 && (
+                  <div className="latest-notification">
+                    <strong>{waitingComments[0].name}</strong>
+                    <p>{waitingComments[0].text}</p>
+                    <small>
+                      Project ID: {waitingComments[0].projectId}
+                    </small>
+                  </div>
+                )}
+              </div>
 
-        <p>
-          {waitingComments[0].text}
-        </p>
+              <span className="notification-count">
+                {waitingComments.length}
+              </span>
 
-        <small>
-          Project ID: {waitingComments[0].projectId}
-        </small>
-      </div>
-    )}
-  </div>
+              <button
+                type="button"
+                className="notification-button"
+                onClick={() => {
+                  document.getElementById('comment-moderation')
+                    ?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Lihat
+              </button>
+            </div>
 
-  <span className="notification-count">
-    {waitingComments.length}
-  </span>
-
-  <button
-    type="button"
-    className="notification-button"
-    onClick={() => {
-      document.getElementById('comment-moderation')
-        ?.scrollIntoView({ behavior: 'smooth' });
-    }}
-  >
-    Lihat
-  </button>
-</div>
             {/* MODERASI KOMENTAR */}
-            <div
-              className="dashboard-list"
-              id="comment-moderation"
-            >
+            <div className="dashboard-list" id="comment-moderation">
               <div className="dashboard-list-heading">
                 <div>
                   <h3>Moderasi Komentar</h3>
@@ -918,7 +954,7 @@ function App() {
                           type="button"
                           onClick={() => removeComment(c.id)}
                         >
-                          <Trash2 size={15} /> Hapus
+                          <Trash2 size={15} />Hapus
                         </button>
                       </div>
                     </div>
@@ -955,7 +991,7 @@ function App() {
                       type="button"
                       onClick={() => removeComment(c.id)}
                     >
-                      <Trash2 size={15} /> Hapus
+                      <Trash2 size={15} />Hapus
                     </button>
                   </div>
                 ))
@@ -1133,78 +1169,6 @@ function App() {
           </a>
         </section>
 
-        
-        {/* BELAJAR GRATIS */}
-        <section className="learning-section wrap" id="belajar">
-          <div className="section-head">
-            <div>
-              <div className="eyebrow">PUSAT PEMBELAJARAN</div>
-              <h2>
-                Belajar Gratis<span className="dot">.</span>
-              </h2>
-              <p>
-                Pelajari teknologi dan pengembangan website dari dasar.
-                Gratis untuk semua orang.
-              </p>
-            </div>
-          </div>
-
-          <div className="learning-grid">
-            {[
-              {
-                title: 'Belajar HTML',
-                description: 'Pelajari dasar membuat struktur halaman website.',
-                level: 'Pemula',
-                url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Structuring_content'
-              },
-              {
-                title: 'Belajar CSS',
-                description: 'Pelajari cara mengatur warna, layout, dan desain website.',
-                level: 'Pemula',
-                url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Styling_basics'
-              },
-              {
-                title: 'Belajar JavaScript',
-                description: 'Kenali dasar pemrograman untuk membuat website interaktif.',
-                level: 'Pemula',
-                url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Scripting'
-              },
-              {
-                title: 'Belajar React',
-                description: 'Mulai membangun antarmuka aplikasi menggunakan React.',
-                level: 'Menengah',
-                url: 'https://react.dev/learn'
-              },
-              {
-                title: 'Belajar Firebase',
-                description: 'Pelajari autentikasi dan database untuk aplikasi.',
-                level: 'Menengah',
-                url: 'https://firebase.google.com/docs'
-              },
-              {
-                title: 'Belajar GitHub',
-                description: 'Pelajari cara menyimpan dan membagikan project.',
-                level: 'Pemula',
-                url: 'https://docs.github.com/id'
-              }
-            ].map((item, index) => (
-              <article className="learning-card" key={index}>
-                <span className="learning-level">{item.level}</span>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-                <a
-                  href={item.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="learning-link"
-                >
-                  Mulai Belajar <ExternalLink size={15} />
-                </a>
-              </article>
-            ))}
-          </div>
-        </section>
-
         {/* PROJECT */}
         <section className="projects-section wrap" id="projects">
           <div className="section-head">
@@ -1271,7 +1235,7 @@ function App() {
                         type="button"
                         onClick={() => shareProject(p)}
                       >
-                        <ExternalLink size={15} /> Bagikan
+                        <ExternalLink size={15} />Bagikan
                       </button>
 
                       <a
@@ -1281,7 +1245,7 @@ function App() {
                         target="_blank"
                         rel="noreferrer"
                       >
-                        <MessageCircle size={15} /> WhatsApp
+                        <MessageCircle size={15} />WhatsApp
                       </a>
 
                       <a
@@ -1291,7 +1255,7 @@ function App() {
                         target="_blank"
                         rel="noreferrer"
                       >
-                        <Facebook size={15} /> Facebook
+                        <Facebook size={15} />Facebook
                       </a>
                     </div>
 
@@ -1336,6 +1300,41 @@ function App() {
               )}
             </div>
           )}
+        </section>
+
+        {/* BELAJAR GRATIS */}
+        <section className="learning-section wrap" id="belajar">
+          <div className="section-head">
+            <div>
+              <div className="eyebrow">PUSAT PEMBELAJARAN</div>
+              <h2>
+                Belajar Gratis<span className="dot">.</span>
+              </h2>
+              <p>
+                Pelajari teknologi dan pengembangan website dari dasar.
+                Gratis untuk semua orang.
+              </p>
+            </div>
+          </div>
+
+          <div className="learning-grid">
+            {LEARNING_ITEMS.map((item, index) => (
+              <article className="learning-card" key={index}>
+                <span className="learning-level">{item.level}</span>
+                <h3>{item.title}</h3>
+                <p>{item.description}</p>
+
+                <a
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="learning-link"
+                >
+                  Mulai Belajar <ExternalLink size={15} />
+                </a>
+              </article>
+            ))}
+          </div>
         </section>
 
         {/* CONTACT */}
