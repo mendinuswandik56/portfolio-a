@@ -817,40 +817,54 @@ function App() {
               </div>
             </div>
 
-            {/* NOTIFIKASI KOMENTAR REAL-TIME */}
-            <div className="notification-card">
-              <div className="notification-icon">
-                <MessageCircle size={25} />
-              </div>
+            
+{/* NOTIFIKASI KOMENTAR REAL-TIME */}
+<div className="notification-card">
+  <div className="notification-icon">
+    <MessageCircle size={25} />
+  </div>
 
-              <div className="notification-content">
-                <h3>Notifikasi Komentar</h3>
-                <p>
-                  {waitingComments.length > 0
-                    ? `Ada ${waitingComments.length} komentar baru yang menunggu persetujuan.`
-                    : 'Tidak ada komentar yang menunggu persetujuan.'}
-                </p>
-              </div>
+  <div className="notification-content">
+    <h3>Notifikasi Komentar</h3>
 
-              <span className="notification-count">
-                {waitingComments.length}
-              </span>
+    <p>
+      {waitingComments.length > 0
+        ? `Ada ${waitingComments.length} komentar yang menunggu persetujuan.`
+        : 'Tidak ada komentar yang menunggu persetujuan.'}
+    </p>
 
-              <button
-                type="button"
-                className="notification-button"
-                onClick={() => {
-                  document
-                    .getElementById('comment-moderation')
-                    ?.scrollIntoView({
-                      behavior: 'smooth'
-                    });
-                }}
-              >
-                Lihat
-              </button>
-            </div>
+    {waitingComments.length > 0 && (
+      <div className="latest-notification">
+        <strong>
+          {waitingComments[0].name}
+        </strong>
 
+        <p>
+          {waitingComments[0].text}
+        </p>
+
+        <small>
+          Project ID: {waitingComments[0].projectId}
+        </small>
+      </div>
+    )}
+  </div>
+
+  <span className="notification-count">
+    {waitingComments.length}
+  </span>
+
+  <button
+    type="button"
+    className="notification-button"
+    onClick={() => {
+      document.getElementById('comment-moderation')
+        ?.scrollIntoView({ behavior: 'smooth' });
+    }}
+  >
+    Lihat
+  </button>
+</div>
             {/* MODERASI KOMENTAR */}
             <div
               className="dashboard-list"
