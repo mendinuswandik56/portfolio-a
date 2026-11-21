@@ -262,9 +262,11 @@ function App() {
 
   const imageCount = projects.filter(p => p.imageUrl).length;
   const linkCount = projects.filter(p => p.url).length;
+
   const waitingComments = pendingComments.filter(
     c => c.status === 'pending'
   );
+
   const approvedComments = pendingComments.filter(
     c => c.status === 'approved'
   );
@@ -314,7 +316,7 @@ function App() {
     );
   }, []);
 
-  // AMBIL KOMENTAR UNTUK ADMIN
+  // AMBIL KOMENTAR UNTUK ADMIN SECARA REAL-TIME
   useEffect(() => {
     if (!isAdmin) {
       setPendingComments([]);
@@ -815,8 +817,45 @@ function App() {
               </div>
             </div>
 
+            {/* NOTIFIKASI KOMENTAR REAL-TIME */}
+            <div className="notification-card">
+              <div className="notification-icon">
+                <MessageCircle size={25} />
+              </div>
+
+              <div className="notification-content">
+                <h3>Notifikasi Komentar</h3>
+                <p>
+                  {waitingComments.length > 0
+                    ? `Ada ${waitingComments.length} komentar baru yang menunggu persetujuan.`
+                    : 'Tidak ada komentar yang menunggu persetujuan.'}
+                </p>
+              </div>
+
+              <span className="notification-count">
+                {waitingComments.length}
+              </span>
+
+              <button
+                type="button"
+                className="notification-button"
+                onClick={() => {
+                  document
+                    .getElementById('comment-moderation')
+                    ?.scrollIntoView({
+                      behavior: 'smooth'
+                    });
+                }}
+              >
+                Lihat
+              </button>
+            </div>
+
             {/* MODERASI KOMENTAR */}
-            <div className="dashboard-list">
+            <div
+              className="dashboard-list"
+              id="comment-moderation"
+            >
               <div className="dashboard-list-heading">
                 <div>
                   <h3>Moderasi Komentar</h3>
