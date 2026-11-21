@@ -53,41 +53,156 @@ const DEFAULT_PROFILE = {
 // ========================================
 
 const LEARNING_ITEMS = [
+  // FRONTEND
   {
     title: 'Belajar HTML',
-    description: 'Pelajari dasar membuat struktur halaman website.',
+    description: 'Mempelajari struktur dasar halaman website.',
     level: 'Pemula',
+    category: 'Frontend',
     url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Structuring_content'
   },
   {
     title: 'Belajar CSS',
-    description: 'Pelajari cara mengatur warna, layout, dan desain website.',
+    description: 'Mengatur warna, layout, dan desain website.',
     level: 'Pemula',
+    category: 'Frontend',
     url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Styling_basics'
   },
   {
     title: 'Belajar JavaScript',
-    description: 'Kenali dasar pemrograman untuk membuat website interaktif.',
+    description: 'Membuat website menjadi lebih interaktif.',
     level: 'Pemula',
+    category: 'Frontend',
     url: 'https://developer.mozilla.org/id/docs/Learn_web_development/Core/Scripting'
   },
   {
     title: 'Belajar React',
-    description: 'Mulai membangun antarmuka aplikasi menggunakan React.',
+    description: 'Membangun antarmuka aplikasi menggunakan React.',
     level: 'Menengah',
+    category: 'Frontend',
     url: 'https://react.dev/learn'
   },
   {
-    title: 'Belajar Firebase',
-    description: 'Pelajari autentikasi dan database untuk aplikasi.',
-    level: 'Menengah',
-    url: 'https://firebase.google.com/docs'
+    title: 'Belajar Bootstrap',
+    description: 'Membuat desain website dengan lebih cepat.',
+    level: 'Pemula',
+    category: 'Frontend',
+    url: 'https://getbootstrap.com/docs/'
   },
   {
-    title: 'Belajar GitHub',
-    description: 'Pelajari cara menyimpan dan membagikan project.',
+    title: 'Belajar Tailwind CSS',
+    description: 'Mendesain website menggunakan utility classes.',
     level: 'Pemula',
+    category: 'Frontend',
+    url: 'https://tailwindcss.com/docs'
+  },
+  {
+    title: 'Responsive Web Design',
+    description: 'Membuat website nyaman dibuka di HP dan komputer.',
+    level: 'Pemula',
+    category: 'Frontend',
+    url: 'https://web.dev/learn/design/'
+  },
+
+  // BACKEND
+  {
+    title: 'Belajar PHP',
+    description: 'Membuat website dinamis menggunakan PHP.',
+    level: 'Pemula',
+    category: 'Backend',
+    url: 'https://www.php.net/manual/id/'
+  },
+  {
+    title: 'Belajar Laravel',
+    description: 'Membangun aplikasi web menggunakan framework Laravel.',
+    level: 'Menengah',
+    category: 'Backend',
+    url: 'https://laravel.com/docs'
+  },
+  {
+    title: 'Belajar CodeIgniter',
+    description: 'Mengenal framework PHP yang ringan.',
+    level: 'Menengah',
+    category: 'Backend',
+    url: 'https://codeigniter.com/user_guide/'
+  },
+  {
+    title: 'Belajar Node.js',
+    description: 'Menjalankan JavaScript di sisi server.',
+    level: 'Menengah',
+    category: 'Backend',
+    url: 'https://nodejs.org/en/learn'
+  },
+  {
+    title: 'Belajar Express.js',
+    description: 'Membuat server dan aplikasi web dengan Express.',
+    level: 'Menengah',
+    category: 'Backend',
+    url: 'https://expressjs.com/en/starter/installing.html'
+  },
+  {
+    title: 'Belajar REST API',
+    description: 'Memahami komunikasi data antar aplikasi.',
+    level: 'Menengah',
+    category: 'Backend',
+    url: 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides'
+  },
+
+  // DATABASE
+  {
+    title: 'Belajar MySQL',
+    description: 'Membuat dan mengelola database website.',
+    level: 'Pemula',
+    category: 'Database',
+    url: 'https://dev.mysql.com/doc/'
+  },
+  {
+    title: 'Belajar Firebase',
+    description: 'Mengenal autentikasi dan database online.',
+    level: 'Menengah',
+    category: 'Database',
+    url: 'https://firebase.google.com/docs'
+  },
+
+  // FRAMEWORK DAN CMS
+  {
+    title: 'Belajar WordPress',
+    description: 'Membuat website tanpa harus menulis banyak kode.',
+    level: 'Pemula',
+    category: 'Framework',
+    url: 'https://learn.wordpress.org/'
+  },
+
+  // TOOLS
+  {
+    title: 'Belajar XAMPP',
+    description: 'Menjalankan Apache dan MySQL di komputer lokal.',
+    level: 'Pemula',
+    category: 'Tools',
+    url: 'https://www.apachefriends.org/index.html'
+  },
+  {
+    title: 'Belajar Composer',
+    description: 'Mengelola library dan dependensi PHP.',
+    level: 'Menengah',
+    category: 'Tools',
+    url: 'https://getcomposer.org/doc/'
+  },
+  {
+    title: 'Belajar Git dan GitHub',
+    description: 'Menyimpan, mengelola, dan membagikan project.',
+    level: 'Pemula',
+    category: 'Tools',
     url: 'https://docs.github.com/id'
+  },
+
+  // DESIGN
+  {
+    title: 'Belajar Figma UI/UX',
+    description: 'Mendesain tampilan dan pengalaman pengguna.',
+    level: 'Pemula',
+    category: 'Design',
+    url: 'https://www.figma.com/resource-library/'
   }
 ];
 
@@ -97,37 +212,13 @@ const LEARNING_ITEMS = [
 
 const LEARNING_CATEGORIES = [
   'Semua',
-  'Dasar',
   'Frontend',
   'Backend',
-  'Tools'
+  'Database',
+  'Framework',
+  'Tools',
+  'Design'
 ];
-
-function getLearningCategory(title) {
-  const name = title.toLowerCase();
-
-  if (
-    name.includes('html') ||
-    name.includes('css') ||
-    name.includes('javascript')
-  ) {
-    return 'Dasar';
-  }
-
-  if (name.includes('react')) {
-    return 'Frontend';
-  }
-
-  if (name.includes('firebase')) {
-    return 'Backend';
-  }
-
-  if (name.includes('github')) {
-    return 'Tools';
-  }
-
-  return 'Lainnya';
-}
 
 // ========================================
 // KOMPONEN KOMENTAR PENGUNJUNG
@@ -341,7 +432,7 @@ function App() {
   const [status, setStatus] = useState('');
   const [profileStatus, setProfileStatus] = useState('');
 
-  // STATE PENCARIAN DAN KATEGORI BELAJAR
+  // STATE PENCARIAN DAN FILTER BELAJAR
   const [learningSearch, setLearningSearch] = useState('');
   const [learningCategory, setLearningCategory] = useState('Semua');
 
@@ -362,21 +453,20 @@ function App() {
 
   // FILTER MATERI BELAJAR
   const filteredLearningItems = LEARNING_ITEMS.filter(item => {
-    const category = getLearningCategory(item.title);
-    const keyword = learningSearch.toLowerCase().trim();
+    const keyword = learningSearch.trim().toLowerCase();
 
     const matchesSearch = (
-      `${item.title} ${item.description} ${item.level} ${category}`
+      `${item.title} ${item.description} ${item.level} ${item.category}`
     ).toLowerCase().includes(keyword);
 
     const matchesCategory =
       learningCategory === 'Semua' ||
-      category === learningCategory;
+      item.category === learningCategory;
 
     return matchesSearch && matchesCategory;
   });
 
-  // RESET PENCARIAN
+  // RESET FILTER
   function resetLearningFilter() {
     setLearningSearch('');
     setLearningCategory('Semua');
@@ -1370,7 +1460,7 @@ function App() {
           )}
         </section>
 
-        {/* BELAJAR GRATIS - PENCARIAN DAN FILTER */}
+        {/* BELAJAR GRATIS */}
         <section className="learning-section wrap" id="belajar">
           <div className="section-head">
             <div>
@@ -1387,13 +1477,13 @@ function App() {
             </div>
           </div>
 
-          {/* KOLOM PENCARIAN */}
+          {/* PENCARIAN */}
           <div className="learning-tools">
             <div className="learning-search-wrap">
               <input
                 type="search"
                 className="learning-search"
-                placeholder="Cari HTML, CSS, JavaScript, React..."
+                placeholder="Cari HTML, PHP, Laravel, XAMPP..."
                 value={learningSearch}
                 onChange={e => setLearningSearch(e.target.value)}
                 aria-label="Cari materi belajar"
@@ -1459,13 +1549,13 @@ function App() {
                     {item.level}
                   </span>
 
+                  <span className="learning-category-label">
+                    {item.category}
+                  </span>
+
                   <h3>{item.title}</h3>
 
                   <p>{item.description}</p>
-
-                  <div className="learning-card-category">
-                    {getLearningCategory(item.title)}
-                  </div>
 
                   <a
                     href={item.url}
