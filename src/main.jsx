@@ -6,7 +6,7 @@ import {
   MessageCircle, Music2, Globe, ArrowUpRight, Pencil, Trash2,
   LayoutDashboard, Image, Eye, Bell, Sun, Moon, QrCode,
   Users, Send, Check, Search, UserRound, Monitor, Database,
-  Palette, Code
+  Palette, Code, Mail
 } from 'lucide-react';
 
 import {
@@ -230,6 +230,7 @@ function App() {
   const [pendingComments, setPendingComments] = useState([]);
   const [guestbookEntries, setGuestbookEntries] = useState([]);
   const [visitorTotal, setVisitorTotal] = useState(0);
+  const [newContactTotal, setNewContactTotal] = useState(0);
 
   const [showLogin, setShowLogin] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -459,6 +460,29 @@ useEffect(() => {
 
       setPendingComments(items);
     }, err => setError(err.message));
+  }, [isAdmin]);
+
+  // Memantau jumlah pesan kontak yang belum dibaca (status: new)
+  useEffect(() => {
+    if (!isAdmin) {
+      setNewContactTotal(0);
+      return;
+    }
+
+    const contactQuery = query(
+      collection(db, 'contactMessages'),
+      where('status', '==', 'new')
+    );
+
+    return onSnapshot(
+      contactQuery,
+      snapshot => {
+        setNewContactTotal(snapshot.size);
+      },
+      err => {
+        console.error('Contact notification error:', err);
+      }
+    );
   }, [isAdmin]);
 
   useEffect(() => {
@@ -794,7 +818,9 @@ useEffect(() => {
   }
 
   const notificationTotal =
-    waitingComments.length + waitingGuests.length;
+    waitingComments.length +
+    waitingGuests.length +
+    newContactTotal;
 
   return (
     <div className={`page ${theme === 'light' ? 'theme-light' : ''}`}>
@@ -915,7 +941,8 @@ useEffect(() => {
                 [ExternalLink, linkCount, 'Project dengan link'],
                 [Eye, visitorTotal, 'Total pengunjung'],
                 [MessageCircle, waitingComments.length, 'Komentar menunggu'],
-                [Users, waitingGuests.length, 'Buku tamu menunggu']
+                [Users, waitingGuests.length, 'Buku tamu menunggu'],
+                [Mail, newContactTotal, 'Pesan kontak baru']
               ].map(([Icon, value, label]) => (
                 <div className="dashboard-card" key={label}>
                   <div className="dashboard-card-icon">
