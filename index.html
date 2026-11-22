@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="id">
   <head>
@@ -5,10 +6,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#090e1c" />
     <meta name="description" content="Portfolio pribadi Aplannymw — karya, proyek, dan informasi kontak." />
+
     <title>Aplannymw | Personal Portfolio</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="/portfolio-a/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/portfolio-a/icon.svg" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Aplannymw" />
+    <link rel="apple-touch-icon" href="/portfolio-a/icon.svg" />
   </head>
+
   <body>
     <div id="root"></div>
+
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Registrasi Service Worker -->
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/portfolio-a/sw.js", {
+              scope: "/portfolio-a/"
+            })
+            .then(() => console.log("Aplannymw PWA aktif"))
+            .catch((error) =>
+              console.error("PWA gagal diaktifkan:", error)
+            );
+        });
+      }
+    </script>
   </body>
 </html>
