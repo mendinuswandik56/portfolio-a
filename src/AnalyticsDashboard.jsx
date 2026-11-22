@@ -94,6 +94,41 @@ export default function AnalyticsDashboard({
     1,
     ...chartData.map(item => item.total)
   );
+  
+
+  // Ekspor statistik ke CSV
+  const exportCSV = () => {
+    const rows = [
+      ['Tanggal', 'Jumlah Pengunjung'],
+      ...dailyStats
+        .slice()
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .map(item => [item.date, item.total])
+    ];
+
+    const csvContent = rows
+      .map(row =>
+        row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')
+      )
+      .join('\n');
+
+    const blob = new Blob(
+      ['\uFEFF' + csvContent],
+      { type: 'text/csv;charset=utf-8;' }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = 'aplannymw-analytics.csv';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
+  };
 
   const dailyTotal = chartData.reduce(
     (sum, item) => sum + item.total,
@@ -228,17 +263,28 @@ export default function AnalyticsDashboard({
       </div>
 
       <div className="analytics-chart-card">
-        <div className="analytics-chart-heading">
-          <div>
-            <h3>Grafik Pengunjung</h3>
-            <p>7 hari terakhir</p>
-          </div>
+       
+<div className="analytics-chart-heading">
+  <div>
+    <h3>Grafik Pengunjung</h3>
+    <p>7 hari terakhir</p>
+  </div>
 
-          <span className="analytics-chart-badge">
-            <TrendingUp size={14} />
-            Harian
-          </span>
-        </div>
+  <div className="analytics-actions">
+    <button
+      type="button"
+      className="analytics-export-btn"
+      onClick={exportCSV}
+    >
+      Unduh CSV
+    </button>
+
+    <span className="analytics-chart-badge">
+      <TrendingUp size={14} />
+      Harian
+    </span>
+  </div>
+</div>
 
         {loading ? (
           <p>Memuat statistik...</p>
