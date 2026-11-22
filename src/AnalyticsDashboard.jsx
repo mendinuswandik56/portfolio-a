@@ -4,6 +4,7 @@ import {
   collection,
   onSnapshot
 } from 'firebase/firestore';
+
 import {
   BarChart3,
   Eye,
@@ -12,6 +13,7 @@ import {
   Mail,
   TrendingUp
 } from 'lucide-react';
+
 import { db } from './firebase';
 
 export default function AnalyticsDashboard({
@@ -39,6 +41,7 @@ export default function AnalyticsDashboard({
 
         setDailyStats(data);
         setLoading(false);
+        setError('');
       },
       err => {
         console.error(err);
@@ -53,7 +56,7 @@ export default function AnalyticsDashboard({
         setContactTotal(snapshot.size);
       },
       err => {
-        console.error('Gagal membaca pesan kontak:', err);
+        console.error(err);
       }
     );
 
@@ -94,7 +97,6 @@ export default function AnalyticsDashboard({
     1,
     ...chartData.map(item => item.total)
   );
-  
 
   // Ekspor statistik ke CSV
   const exportCSV = () => {
@@ -108,7 +110,11 @@ export default function AnalyticsDashboard({
 
     const csvContent = rows
       .map(row =>
-        row.map(value => `"${String(value).replace(/"/g, '""')}"`).join(',')
+        row
+          .map(value =>
+            `"${String(value).replace(/"/g, '""')}"`
+          )
+          .join(',')
       )
       .join('\n');
 
@@ -134,8 +140,8 @@ export default function AnalyticsDashboard({
     (sum, item) => sum + item.total,
     0
   );
- 
-  // Menghitung pengunjung minggu ini
+
+  // Statistik mingguan dan bulanan
   const today = new Date();
 
   const todayId = [
@@ -162,7 +168,6 @@ export default function AnalyticsDashboard({
     )
     .reduce((sum, item) => sum + item.total, 0);
 
-  // Menghitung pengunjung bulan ini
   const monthStartId = [
     today.getFullYear(),
     String(today.getMonth() + 1).padStart(2, '0'),
@@ -175,8 +180,8 @@ export default function AnalyticsDashboard({
       item.date <= todayId
     )
     .reduce((sum, item) => sum + item.total, 0);
- 
 
+  // Kartu statistik
   const cards = [
     {
       label: 'Total Pengunjung',
@@ -209,44 +214,35 @@ export default function AnalyticsDashboard({
       icon: TrendingUp
     },
     {
-  label: 'Pengunjung Minggu Ini',
-  value: weeklyTotal,
-  icon: TrendingUp
-},
-{
-  label: 'Pengunjung Bulan Ini',
-  value: monthlyTotal,
-  icon: BarChart3
-},
+      label: 'Pengunjung Minggu Ini',
+      value: weeklyTotal,
+      icon: TrendingUp
+    },
+    {
+      label: 'Pengunjung Bulan Ini',
+      value: monthlyTotal,
+      icon: BarChart3
+    }
   ];
 
   if (!isAdmin) return null;
 
   return (
     <section className="analytics-dashboard">
-    
-       
-<div className="analytics-chart-heading">
-  <div>
-    <h3>Grafik Pengunjung</h3>
-    <p>7 hari terakhir</p>
-  </div>
 
-  <div className="analytics-actions">
-    <button
-      type="button"
-      className="analytics-export-btn"
-      onClick={exportCSV}
-    >
-      Unduh CSV
-    </button>
+      <div className="analytics-heading">
+        <div>
+          <span className="analytics-eyebrow">
+            WEBSITE STATISTICS
+          </span>
 
-    <span className="analytics-chart-badge">
-      <TrendingUp size={14} />
-      Harian
-    </span>
-  </div>
-</div
+          <h2>Analytics Dashboard</h2>
+
+          <p>
+            Ringkasan aktivitas website Aplannymw.
+          </p>
+        </div>
+
         <div className="analytics-heading-icon">
           <BarChart3 size={25} />
         </div>
@@ -275,28 +271,28 @@ export default function AnalyticsDashboard({
       </div>
 
       <div className="analytics-chart-card">
-       
-<div className="analytics-chart-heading">
-  <div>
-    <h3>Grafik Pengunjung</h3>
-    <p>7 hari terakhir</p>
-  </div>
 
-  <div className="analytics-actions">
-    <button
-      type="button"
-      className="analytics-export-btn"
-      onClick={exportCSV}
-    >
-      Unduh CSV
-    </button>
+        <div className="analytics-chart-heading">
+          <div>
+            <h3>Grafik Pengunjung</h3>
+            <p>7 hari terakhir</p>
+          </div>
 
-    <span className="analytics-chart-badge">
-      <TrendingUp size={14} />
-      Harian
-    </span>
-  </div>
-</div>
+          <div className="analytics-actions">
+            <button
+              type="button"
+              className="analytics-export-btn"
+              onClick={exportCSV}
+            >
+              Unduh CSV
+            </button>
+
+            <span className="analytics-chart-badge">
+              <TrendingUp size={14} />
+              Harian
+            </span>
+          </div>
+        </div>
 
         {loading ? (
           <p>Memuat statistik...</p>
@@ -337,6 +333,7 @@ export default function AnalyticsDashboard({
           Data harian dihitung berdasarkan browser/perangkat
           yang berkunjung.
         </div>
+
       </div>
     </section>
   );
