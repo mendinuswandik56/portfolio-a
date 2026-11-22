@@ -2427,3 +2427,35 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     font-size: 9px;
   }
 }
+
+.analytics-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.analytics-export-btn {
+  padding: 9px 13px;
+  border: 1px solid rgba(129, 140, 248, 0.35);
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.16);
+  color: #c7d2fe;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.analytics-export-btn:hover {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+@media (max-width: 480px) {
+  .analytics-chart-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .analytics-actions {
+    flex-wrap: wrap;
+  }
+}
