@@ -1,0 +1,23 @@
+
+{
+  "id": "/portfolio-a/",
+  "name": "Aplannymw Personal Portfolio",
+  "short_name": "Aplannymw",
+  "description": "Portfolio pribadi Aplannymw — karya, proyek, dan informasi kontak.",
+  "lang": "id",
+  "start_url": "/portfolio-a/",
+  "scope": "/portfolio-a/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090e1c",
+  "theme_color": "#090e1c",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/portfolio-a/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
