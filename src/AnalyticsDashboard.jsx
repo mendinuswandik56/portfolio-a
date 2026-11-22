@@ -224,17 +224,29 @@ export default function AnalyticsDashboard({
 
   return (
     <section className="analytics-dashboard">
-      <div className="analytics-heading">
-        <div>
-          <span className="analytics-eyebrow">
-            WEBSITE STATISTICS
-          </span>
-          <h2>Analytics Dashboard</h2>
-          <p>
-            Ringkasan aktivitas website Aplannymw.
-          </p>
-        </div>
+    
+       
+<div className="analytics-chart-heading">
+  <div>
+    <h3>Grafik Pengunjung</h3>
+    <p>7 hari terakhir</p>
+  </div>
 
+  <div className="analytics-actions">
+    <button
+      type="button"
+      className="analytics-export-btn"
+      onClick={exportCSV}
+    >
+      Unduh CSV
+    </button>
+
+    <span className="analytics-chart-badge">
+      <TrendingUp size={14} />
+      Harian
+    </span>
+  </div>
+</div
         <div className="analytics-heading-icon">
           <BarChart3 size={25} />
         </div>
