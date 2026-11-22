@@ -1913,3 +1913,16 @@ useEffect(() => {
 }
 
 createRoot(document.getElementById('root')).render(<App />);
+// Mengaktifkan Service Worker Aplannymw
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/portfolio-a/sw.js")
+      .then((registration) => {
+        console.log("Service Worker aktif:", registration.scope);
+      })
+      .catch((error) => {
+        console.error("Service Worker gagal:", error);
+      });
+  });
+}
