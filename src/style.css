@@ -2700,3 +2700,123 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     font-size: 9px;
   }
 }
+
+/* ==========================================
+   PENYEMPURNAAN BERANDA APLANNYMW
+   Navigasi sticky + teks berjalan profesional
+========================================== */
+
+/* Gunakan clip agar efek sticky tidak dibatalkan oleh overflow:hidden. */
+.page {
+  overflow: clip;
+}
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  width: 100%;
+  max-width: 100%;
+  min-height: 76px;
+  padding: 10px max(24px, calc((100vw - 1240px) / 2));
+  margin-inline: 0;
+  background: rgba(9, 14, 28, 0.88);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.16);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+html {
+  scroll-padding-top: 92px;
+}
+
+#home, #about, #skills, #projects, #belajar, #guestbook, #contact, #dashboard {
+  scroll-margin-top: 96px;
+}
+
+.hero-marquee {
+  width: min(100%, 610px);
+  overflow: hidden;
+  margin-top: 25px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(167, 139, 250, 0.22);
+  border-bottom: 1px solid rgba(167, 139, 250, 0.22);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+.hero-marquee-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  gap: 22px;
+  white-space: nowrap;
+  animation: aplannymw-marquee 28s linear infinite;
+  will-change: transform;
+}
+
+.hero-marquee-track span {
+  color: #c7b8ff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.2px;
+}
+
+.hero-marquee-track i {
+  color: #65c9e8;
+  font-size: 13px;
+  font-style: normal;
+}
+
+.hero-marquee:hover .hero-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes aplannymw-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Tema terang tetap memiliki navbar yang jelas terbaca. */
+.theme-light .nav {
+  background: rgba(245, 247, 255, 0.9);
+  border-bottom-color: rgba(50, 60, 90, 0.14);
+  box-shadow: 0 10px 30px rgba(20, 30, 60, 0.08);
+}
+
+.theme-light .brand { color: #172033; }
+.theme-light .nav-actions > a { color: #45516b; }
+.theme-light .nav-actions > a:hover { color: #5b43c5; }
+
+@media (max-width: 640px) {
+  .nav {
+    min-height: 66px;
+    padding: 8px 18px;
+  }
+
+  html { scroll-padding-top: 76px; }
+
+  #home, #about, #skills, #projects, #belajar, #guestbook, #contact, #dashboard {
+    scroll-margin-top: 78px;
+  }
+
+  .nav-actions {
+    top: 66px;
+    z-index: 90;
+  }
+
+  .hero-marquee {
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px 0;
+  }
+
+  .hero-marquee-track { gap: 17px; animation-duration: 22s; }
+  .hero-marquee-track span { font-size: 9px; letter-spacing: 1.6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .hero-marquee-track { animation: none; }
+}

@@ -1167,6 +1167,19 @@ useEffect(() => {
             </h1>
             <p className="lead">{profile.heroDescription}</p>
 
+            <div className="hero-marquee" aria-label="Bidang keahlian Aplannymw">
+              <div className="hero-marquee-track">
+                <span>WEB DEVELOPER</span><i>✦</i>
+                <span>FRONTEND DEVELOPER</span><i>✦</i>
+                <span>UI DESIGN ENTHUSIAST</span><i>✦</i>
+                <span>CREATIVE PROBLEM SOLVER</span><i>✦</i>
+                <span>WEB DEVELOPER</span><i>✦</i>
+                <span>FRONTEND DEVELOPER</span><i>✦</i>
+                <span>UI DESIGN ENTHUSIAST</span><i>✦</i>
+                <span>CREATIVE PROBLEM SOLVER</span><i>✦</i>
+              </div>
+            </div>
+
             <div className="hero-links">
               <a className="primary" href="#projects">
                 Lihat Project <ExternalLink size={16} />
